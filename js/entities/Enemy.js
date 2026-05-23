@@ -60,9 +60,14 @@ class Enemy {
   }
 
   update(dt) {
+    DEBUG.entity.trace('Enemy update start', { type: this.type, state: this.state, pos: this.position });
+    
     if (this.state === 'dead') {
       this.deathTimer -= dt;
-      if (this.deathTimer <= 0) this.mesh.visible = false;
+      if (this.deathTimer <= 0) {
+        this.mesh.visible = false;
+        DEBUG.entity.log('Труп врага скрыт');
+      }
       return;
     }
 
@@ -82,6 +87,7 @@ class Enemy {
     // --- ДОБАВИТЬ ЭТОТ БЛОК ---
     // Защита от NaN: если игрок находится прямо внутри врага, не вычисляем вектор
     if (dist < 0.1) {
+        DEBUG.entity.warn('Игрок слишком близко к врагу, пропускаем вычисления', { dist });
         this.mesh.position.copy(this.position);
         return; 
     }
@@ -90,7 +96,11 @@ class Enemy {
 
     // State machine
     if (canSee && dist < 25) {
+      const oldState = this.state;
       this.state = dist < this.range ? 'attack' : 'chase';
+      if (oldState !== this.state) {
+        DEBUG.entity.info(`Смена состояния врага: ${oldState} -> ${this.state}`, { type: this.type });
+      }
     } else if (canSee) {
       this.state = 'chase';
     } else {
@@ -105,12 +115,21 @@ class Enemy {
     this.handleState(dt, toPlayer, dist);
 
     // Bounds
+    const oldX = this.position.x;
+    const oldZ = this.position.z;
     this.position.x = Math.max(-29, Math.min(29, this.position.x));
     this.position.z = Math.max(-29, Math.min(29, this.position.z));
+    
+    // Логирование если позиция была обрезана границами
+    if (oldX !== this.position.x || oldZ !== this.position.z) {
+      DEBUG.world.warn('Враг уперся в границу карты', { pos: this.position, type: this.type });
+    }
 
     // Update mesh
     this.mesh.position.copy(this.position);
     this.mesh.position.y += Math.sin(Date.now() * 0.003 + this.position.x) * 0.002;
+    
+    DEBUG.entity.trace('Enemy update end', { pos: this.position, state: this.state });
   }
 
   handleState(dt, toPlayer, dist) {
@@ -148,10 +167,13 @@ class Enemy {
   }
 
   takeDamage(damage) {
+    DEBUG.entity.info('Враг получает урон', { type: this.type, damage, health: this.health });
+    
     this.health -= damage;
     this.hitFlash = 0.15;
 
     if (this.health <= 0 && this.state !== 'dead') {
+      DEBUG.entity.info(`Враг ${this.type} уничтожен!`, { score: this.score });
       this.state = 'dead';
       this.deathTimer = 2;
       this.game.enemiesKilled++;
@@ -167,6 +189,7 @@ class Enemy {
     if (this.healthBar) {
       const pct = Math.max(0, this.health / this.maxHealth);
       this.healthBar.scale.x = pct;
+      DEBUG.entity.trace(`HP бар врага: ${(pct * 100).toFixed(0)}%`);
     }
 
     this.game.hud.update();

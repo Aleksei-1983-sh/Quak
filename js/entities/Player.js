@@ -33,6 +33,8 @@ class Player {
   }
 
   update(dt) {
+	DEBUG.entity.trace('Player update start', { dt, pos: this.position });
+	
 	const input = this.game.input;
 	const speed = (input.isPressed('ShiftLeft') ? 6 : 3.5) * dt;
 	this.sprinting = input.isPressed('ShiftLeft');
@@ -63,10 +65,17 @@ class Player {
 	  if (!this.game.collision.checkCollision(newPos)) {
 		this.position.add(moveDir);
 	  } else {
+		DEBUG.physics.trace('Коллизия игрока, пытаемся разделить движение');
 		const newX = this.position.clone().add(new THREE.Vector3(moveDir.x, 0, 0));
-		if (!this.game.collision.checkCollision(newX)) this.position.x = newX.x;
+		if (!this.game.collision.checkCollision(newX)) {
+		  this.position.x = newX.x;
+		  DEBUG.physics.trace('Движение по X успешно');
+		}
 		const newZ = this.position.clone().add(new THREE.Vector3(0, 0, moveDir.z));
-		if (!this.game.collision.checkCollision(newZ)) this.position.z = newZ.z;
+		if (!this.game.collision.checkCollision(newZ)) {
+		  this.position.z = newZ.z;
+		  DEBUG.physics.trace('Движение по Z успешно');
+		}
 	  }
 	}
 
@@ -78,8 +87,15 @@ class Player {
 	  const mapHalfWidth = (level.cols * level.tileSize) / 2;
 	  const mapHalfDepth = (level.rows * level.tileSize) / 2;
 	  
+	  const oldX = this.position.x;
+	  const oldZ = this.position.z;
 	  this.position.x = Math.max(-mapHalfWidth + margin, Math.min(mapHalfWidth - margin, this.position.x));
 	  this.position.z = Math.max(-mapHalfDepth + margin, Math.min(mapHalfDepth - margin, this.position.z));
+	  
+	  // Логирование если позиция была обрезана границами
+	  if (oldX !== this.position.x || oldZ !== this.position.z) {
+		DEBUG.world.warn('Игрок уперся в границу карты', { pos: this.position });
+	  }
 	}
 	this.position.y = 1.7;
 
@@ -88,19 +104,28 @@ class Player {
 	this.game.camera.rotation.order = 'YXZ';
 	this.game.camera.rotation.y = this.yaw;
 	this.game.camera.rotation.x = this.pitch;
+	
+	DEBUG.entity.trace('Player update end', { pos: this.position, yaw: this.yaw, pitch: this.pitch });
   }
 
   takeDamage(damage) {
-	if (this.godMode) return; // <--- ДОБАВИТЬ ЭТУ СТРОКУ (Игра не примет урон)
+	DEBUG.entity.info('Игрок получает урон', { damage, godMode: this.godMode });
+	
+	if (this.godMode) {
+	  DEBUG.entity.log('God Mode активен - урон игнорируется');
+	  return;
+	}
 
 	if (this.armor > 0) {
 	  const armorAbsorb = Math.min(this.armor, damage * 0.6);
 	  this.armor -= armorAbsorb;
 	  damage -= armorAbsorb;
+	  DEBUG.entity.log(`Броня поглотила ${armorAbsorb.toFixed(1)} урона`);
 	}
 
 	this.health -= damage;
 	this.health = Math.max(0, this.health);
+	DEBUG.entity.warn(`Здоровье игрока: ${this.health.toFixed(1)}`);
 	this.game.audio.play('pain');
 
 	const df = document.getElementById('damage-flash');
@@ -110,6 +135,7 @@ class Player {
 	this.game.hud.update();
 
 	if (this.health <= 0) {
+	  DEBUG.entity.error('Игрок погиб!');
 	  this.game.gameOver();
 	}
   }

@@ -6,6 +6,8 @@ class Props {
   }
 
   spawnParticles(pos, color, count) {
+    DEBUG.world.trace('spawnParticles', { pos, color: '#' + color.toString(16), count });
+    
     for (let i = 0; i < count; i++) {
       const geo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
       const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 });
@@ -25,9 +27,12 @@ class Props {
         mesh
       });
     }
+    DEBUG.world.log(`Создано ${count} частиц`);
   }
 
   updateParticles(dt) {
+    DEBUG.world.trace('updateParticles', { count: this.particles.length });
+    
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.life -= dt;
@@ -44,15 +49,22 @@ class Props {
         this.particles.splice(i, 1);
       }
     }
+    
+    DEBUG.world.trace('updateParticles end', { remaining: this.particles.length });
   }
 
   spawnTracer(from, dir, dist, color) {
+    DEBUG.combat.trace('spawnTracer', { from, dir, dist, color: '#' + color.toString(16) });
+    
     const to = from.clone().add(dir.clone().multiplyScalar(dist));
     const points = [from, to];
     const geo = new THREE.BufferGeometry().setFromPoints(points);
     const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.6 });
     const line = new THREE.Line(geo, mat);
     this.scene.add(line);
-    setTimeout(() => this.scene.remove(line), 80);
+    setTimeout(() => {
+      this.scene.remove(line);
+      DEBUG.combat.trace('Tracer удален');
+    }, 80);
   }
 }
