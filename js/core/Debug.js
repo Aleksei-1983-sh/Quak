@@ -31,7 +31,7 @@ const DEBUG = {
   },
   
   // Текущий минимальный уровень для вывода (например, только WARN и ERROR)
-  MIN_LEVEL: this.LEVELS.LOG,
+  MIN_LEVEL: 1,  // По умолчанию LOG
   
   // Префиксы для категорий
   PREFIXES: {
@@ -210,7 +210,7 @@ const DEBUG = {
     Object.keys(this.CATEGORIES).forEach(key => {
       this.CATEGORIES[key] = true;
     });
-    this.MIN_LEVEL = this.LEVELS.LOG;
+    this.MIN_LEVEL = 1; // LOG level
     console.log('%c✅ DEBUG: Все логи включены', 'color: #00ff44; font-weight: bold;');
   },
   
@@ -255,7 +255,7 @@ const DEBUG = {
       totalMessages: this._messageCount,
       enabled: this.ENABLED,
       categories: { ...this.CATEGORIES },
-      minLevel: Object.keys(this.LEVELS).find(key => this.LEVELS[key] === this.MIN_LEVEL)
+      minLevel: Object.keys(this.LEVELS).find(key => this.LEVELS[key] === this.MIN_LEVEL) || 'LOG'
     };
   },
   
