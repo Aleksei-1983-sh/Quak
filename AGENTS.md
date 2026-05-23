@@ -3,8 +3,8 @@
 ## 📊 Project Snapshot (Current State)
 
 **Project Name:** Quake2 Browser  
-**Description:** Web-based Quake2 game browser built with Three.js and Web Audio API  
-**Snapshot Date:** Generated automatically  
+**Description:** Web-based Quake2-style browser FPS built with Three.js and Web Audio API  
+**Snapshot Date:** 2026-05-23  
 
 ---
 
@@ -12,64 +12,81 @@
 
 ### Core Structure
 ```
-/workspace/
-├── index.html              # Main entry point
-├── README.md               # Project documentation
+/workspace/Quak/
+├── index.html                 # Main entry point
+├── README.md                  # Project documentation
+├── AGENTS.md                  # Project state snapshot and agent instructions
+├── test_load.html             # Manual loading test page
+├── test_three.html            # Three.js sanity test page
 ├── css/
-│   └── style.css           # Application styles
+│   └── style.css              # Application styles
 ├── js/
 │   ├── core/
-│   │   ├── GameEngine.js   # Main game loop & orchestration (517 LOC)
-│   │   ├── InputManager.js # Player input handling (72 LOC)
-│   │   └── AudioSystem.js  # Web Audio API integration (162 LOC)
+│   │   ├── GameEngine.js              # Main game loop & orchestration (505 LOC)
+│   │   ├── GameEngine_weapon_update.js# Weapon update integration helper (67 LOC)
+│   │   ├── InputManager.js            # Player input handling (99 LOC)
+│   │   ├── AudioSystem.js             # Web Audio API integration (162 LOC)
+│   │   └── Debug.js                   # Centralized debug/logging system (308 LOC)
 │   ├── renderer/
-│   │   ├── Renderer.js     # Three.js rendering setup (29 LOC)
-│   │   └── PostProcessing.js # Visual effects (29 LOC)
+│   │   ├── Renderer.js        # Three.js rendering setup (29 LOC)
+│   │   └── PostProcessing.js  # Visual effects scaffold (29 LOC)
 │   ├── entities/
-│   │   ├── Player.js       # Player entity logic (116 LOC)
-│   │   ├── Enemy.js        # Enemy AI & behavior (174 LOC)
-│   │   └── Weapon.js       # Weapon system (9 LOC)
+│   │   ├── Player.js          # Player entity logic (135 LOC)
+│   │   ├── Enemy.js           # Enemy AI & behavior (197 LOC)
+│   │   └── weapons/
+│   │       ├── Weapon.js         # Base weapon class and shared behavior (218 LOC)
+│   │       ├── Pistol.js         # Pistol weapon implementation (109 LOC)
+│   │       ├── Rifle.js          # Rifle weapon implementation (125 LOC)
+│   │       ├── Shotgun.js        # Shotgun weapon implementation (138 LOC)
+│   │       ├── RocketLauncher.js # Rocket launcher implementation (333 LOC)
+│   │       └── index.js          # Weapon exports (5 LOC)
 │   ├── world/
-│   │   ├── Level.js        # Level loading & management (662 LOC)
-│   │   ├── Collision.js    # Collision detection (45 LOC)
-│   │   └── Props.js        # Environmental props (58 LOC)
-│   └── ui/
-│       └── HUD.js          # Heads-up display (178 LOC)
+│   │   ├── Level.js           # Level loading & management (663 LOC)
+│   │   ├── Collision.js       # Collision detection (71 LOC)
+│   │   └── Props.js           # Environmental props (70 LOC)
+│   ├── ui/
+│   │   └── HUD.js             # Heads-up display (258 LOC)
+│   └── libs/
+│       └── three.min.js       # Local Three.js library stub/reference
 └── assets/
-    ├── maps/               # Level maps (empty - needs assets)
-    ├── models/             # 3D models (empty - needs assets)
-    ├── sounds/             # Audio files (empty - needs assets)
-    └── textures/           # Texture files (empty - needs assets)
+    ├── maps/                  # Level maps (currently empty)
+    ├── models/                # 3D models (currently empty)
+    ├── sounds/                # Audio files (currently empty)
+    └── textures/              # Texture files (currently empty)
 ```
 
 ### Code Statistics
-- **Total JavaScript Lines:** ~2,051 LOC
-- **Total Files:** 12 JS files + 1 HTML + 1 CSS
+- **Total JavaScript Lines:** ~3,527 LOC
+- **Total Source JS Files:** 19 (excluding generated/build artifacts)
+- **Additional Web Entry/Test Files:** `index.html`, `test_load.html`, `test_three.html`, `css/style.css`
 - **Main Dependencies:** Three.js, Web Audio API
-- **Asset Status:** Placeholder directories only (no actual assets yet)
+- **Asset Status:** Asset directories exist but are still placeholders (no production assets committed)
 
 ---
 
 ## 🎯 Current Development Stage
 
-**Stage:** Early Development / Prototype
+**Stage:** Expanded Prototype / Core Systems Integration
 
 ### Completed:
-- ✅ Basic project structure established
-- ✅ Core game engine architecture implemented
-- ✅ Input management system
-- ✅ Audio system foundation
-- ✅ Entity classes (Player, Enemy, Weapon)
-- ✅ World systems (Level, Collision, Props)
-- ✅ UI/HUD system
-- ✅ Renderer with post-processing support
-- ✅ **Debug & Error System** - Comprehensive logging framework with categories and levels
+- ✅ Modular project structure with separated core/renderer/world/entities/ui layers
+- ✅ Core game loop and orchestration (`GameEngine`)
+- ✅ Input management and browser pointer-lock interactions
+- ✅ Audio system foundation via Web Audio API
+- ✅ Dedicated debug infrastructure (`Debug.js`) with categories and levels
+- ✅ Enemy/player entity logic and HUD integration
+- ✅ Expanded weapon framework with multiple concrete weapons:
+  - Pistol
+  - Rifle
+  - Shotgun
+  - Rocket Launcher
+- ✅ Manual browser test pages (`test_load.html`, `test_three.html`) for integration sanity checks
 
 ### In Progress / Missing:
-- ⚠️ No game assets loaded (textures, models, sounds, maps)
-- ⚠️ Asset pipeline not configured
-- ⚠️ Integration testing needed
-- ⚠️ Build/deployment process not defined
+- ⚠️ Real game assets are still missing (maps/models/textures/sounds directories are empty)
+- ⚠️ Asset loading pipeline and content validation are still incomplete
+- ⚠️ Automated tests and CI checks are not configured
+- ⚠️ Build/deployment pipeline is not defined (no bundling/minification workflow yet)
 
 ---
 
@@ -77,45 +94,44 @@
 
 ### 1. GameEngine (`js/core/GameEngine.js`)
 Central orchestrator managing:
-- Game loop & delta time
-- Score & weapon state
+- Game loop & frame timing
+- Score, player state, and runtime system coordination
 - Entity collections (enemies, projectiles, particles)
-- System initialization coordination
+- Initialization sequence across subsystems
 
-### 2. Level System (`js/world/Level.js`)
-Largest module (662 LOC) handling:
-- Level data parsing
+### 2. Weapon System (`js/entities/weapons/*`)
+Modular weapon architecture handling:
+- Shared base behavior in `Weapon.js`
+- Per-weapon fire/reload/balance logic in dedicated classes
+- Export aggregation via `js/entities/weapons/index.js`
+- Ongoing integration support from `GameEngine_weapon_update.js`
+
+### 3. Level System (`js/world/Level.js`)
+Largest world module (663 LOC) handling:
+- Level data parsing and setup
 - Map geometry generation
-- Enemy spawn points
+- Enemy spawn points and objective flow
 - Level completion logic
 
-### 3. Renderer (`js/renderer/Renderer.js`)
+### 4. Renderer (`js/renderer/Renderer.js` + `PostProcessing.js`)
 Three.js wrapper providing:
-- Scene setup
-- Camera management
-- WebGL renderer configuration
+- Scene/camera/renderer setup
+- WebGL render flow foundation
+- Post-processing extension point
 
-### 4. InputManager (`js/core/InputManager.js`)
-Handles:
-- Keyboard input
-- Mouse movement/locking
-- Action mappings
-
-### 5. Debug System (Integrated across all modules)
-Comprehensive logging framework providing:
-- **Global toggle** - Enable/disable all logs via `DEBUG.ENABLED`
-- **Categorized logging** - Separate controls for core, entity, combat, physics, world, ui, input, render, perf, audio
-- **Log levels** - trace, log, info, warn, error with color coding
-- **Timestamps** - Every log includes timing information
-- **Contextual messages** - Detailed state information at critical points
-- **Performance tracking** - FPS monitoring and frame time analysis
-- **Error catching** - Try-catch blocks with informative error messages
+### 5. Debug System (`js/core/Debug.js` + integrations)
+Central logging framework providing:
+- **Global toggle** - `DEBUG.ENABLED`
+- **Category toggles** - core/entity/combat/physics/world/ui/input/render/perf/audio
+- **Log levels** - trace/log/info/warn/error
+- **Performance diagnostics** - frame/FPS visibility
+- **Structured error messaging** in critical game paths
 
 Usage in browser console:
 ```javascript
-DEBUG.ENABLED = false;  // Disable all logs
-DEBUG.CATEGORIES.combat = false;  // Disable combat logs only
-DEBUG.LEVELS.error = true;  // Show only errors
+DEBUG.ENABLED = false;                 // Disable all logs
+DEBUG.CATEGORIES.combat = false;       // Disable combat logs only
+DEBUG.LEVELS.error = true;             // Keep error-level logs visible
 ```
 
 ---
@@ -126,55 +142,31 @@ DEBUG.LEVELS.error = true;  // Show only errors
 
 **WHENEVER CODE CHANGES ARE MADE, THIS FILE MUST BE UPDATED IMMEDIATELY.**
 
-#### Why?
-This file serves as the single source of truth for:
-- Project architecture understanding
-- Current development stage
-- Component relationships
-- Code statistics and metrics
-- Known gaps and TODOs
-
-#### What to Update:
-1. **Code Statistics** - Update LOC counts if files grow/shrink significantly
-2. **File Structure** - Add/remove files in the architecture tree
-3. **Development Stage** - Mark completed features, add new missing items
-4. **Component Descriptions** - Update if component responsibilities change
-5. **Snapshot Date** - Always update when making changes
-
-#### How to Update:
-- Edit the relevant sections above
-- Keep descriptions concise but accurate
-- Maintain the markdown structure
-- Update the snapshot date to current date
-
-**FAILURE TO UPDATE THIS FILE MAY RESULT IN OUTDATED ARCHITECTURE UNDERSTANDING AND INCORRECT ASSUMPTIONS ABOUT THE CODEBASE.**
+This file is the source-of-truth project snapshot for architecture, stage, and current known gaps.
 
 ---
 
 ## 🚀 Next Steps
 
-1. **Asset Integration** - Add actual game assets to empty directories
-2. **Asset Loading Pipeline** - Implement loaders for textures, models, sounds
-3. **Testing** - Create test levels and verify gameplay mechanics
-4. **Build Process** - Set up bundling/minification for production
-5. **Documentation** - Expand README with usage instructions
+1. **Asset Integration** - Add real maps/models/textures/sounds
+2. **Asset Pipeline** - Implement robust runtime loaders and fallback handling
+3. **Gameplay Validation** - Run integration passes across weapons, AI, and level flow
+4. **Automated Testing & CI** - Add smoke/unit checks and continuous verification
+5. **Build Process** - Add production bundling/minification and deployment docs
 
 ---
 
 ## 📝 Notes for Agents
 
-- This is a browser-based FPS using Three.js
-- The codebase is modular with clear separation of concerns
-- Asset directories are placeholders - the game cannot run without actual assets
-- GameEngine is the central coordination point
-- When adding features, follow existing patterns in the codebase
-- Always verify asset paths and loading mechanisms when modifying world/entity code
-- **Debug system is active** - Use `DEBUG.ENABLED` to control logging verbosity
-- **Log categories** - Target specific systems: `DEBUG.CATEGORIES.physics`, `DEBUG.CATEGORIES.combat`, etc.
-- **Error handling** - All critical sections have try-catch blocks with informative messages
-- **Performance monitoring** - FPS logs available via `DEBUG.CATEGORIES.perf`
+- Browser-based FPS project using Three.js + Web Audio API
+- Game architecture is modular and already split by responsibility
+- Asset directories are still placeholders, so full gameplay readiness is not yet achieved
+- `GameEngine` is the primary runtime coordinator
+- Weapon logic is now distributed under `js/entities/weapons/`
+- Debug controls are first-class; tune verbosity with `DEBUG.ENABLED` and `DEBUG.CATEGORIES.*`
+- Prefer incremental integration and sanity checks via `test_load.html` and `test_three.html`
 
 ---
 
-*Last Updated: Current Session*  
+*Last Updated: 2026-05-23 (UTC)*  
 *Maintained by: Development Team & AI Agents*
