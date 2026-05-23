@@ -88,25 +88,31 @@ class GameEngine {
   }
 
   createWeaponModel() {
-    this.weaponGroup = new THREE.Group();
-
-    const gunGeo = new THREE.BoxGeometry(0.08, 0.12, 0.5);
-    const gunMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-    this.weaponMesh = new THREE.Mesh(gunGeo, gunMat);
-    this.weaponMesh.position.set(0.25, -0.2, -0.4);
-    this.weaponGroup.add(this.weaponMesh);
-
-    const barrelGeo = new THREE.CylinderGeometry(0.02, 0.025, 0.3, 8);
-    const barrelMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
-    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
-    barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0.25, -0.15, -0.7);
-    this.weaponGroup.add(barrel);
-
-    this.gunLight = new THREE.PointLight(0xff6600, 0.3, 2);
-    this.gunLight.position.set(0.25, -0.1, -0.5);
-    this.weaponGroup.add(this.gunLight);
-
+    // Создаем оружие используя метод текущего оружия
+    const weapon = this.player.weapons[this.currentWeapon];
+    if (weapon && weapon.createModel) {
+      const model = weapon.createModel(THREE);
+      this.weaponGroup = model.weaponGroup;
+      this.weaponMesh = model.weaponMesh;
+      this.gunLight = model.gunLight;
+    } else {
+      // Fallback к старой реализации
+      this.weaponGroup = new THREE.Group();
+      const gunGeo = new THREE.BoxGeometry(0.08, 0.12, 0.5);
+      const gunMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+      this.weaponMesh = new THREE.Mesh(gunGeo, gunMat);
+      this.weaponMesh.position.set(0.25, -0.2, -0.4);
+      this.weaponGroup.add(this.weaponMesh);
+      const barrelGeo = new THREE.CylinderGeometry(0.02, 0.025, 0.3, 8);
+      const barrelMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+      const barrel = new THREE.Mesh(barrelGeo, barrelMat);
+      barrel.rotation.x = Math.PI / 2;
+      barrel.position.set(0.25, -0.15, -0.7);
+      this.weaponGroup.add(barrel);
+      this.gunLight = new THREE.PointLight(0xff6600, 0.3, 2);
+      this.gunLight.position.set(0.25, -0.1, -0.5);
+      this.weaponGroup.add(this.gunLight);
+    }
     this.camera.add(this.weaponGroup);
     this.scene.add(this.camera);
   }
@@ -193,11 +199,14 @@ class GameEngine {
     if (idx === this.currentWeapon || idx >= this.player.weapons.length) return;
     this.currentWeapon = idx;
     this.reloading = false;
+    
+    // Пересоздаем модель оружия при переключении
+    if (this.weaponGroup) {
+      this.camera.remove(this.weaponGroup);
+    }
+    this.createWeaponModel();
+    
     this.hud.update();
-
-    // Цвета для разных типов оружия
-    const colors = [0x00ff44, 0x888888, 0xff8800, 0xff4400];
-    if (this.weaponMesh) this.weaponMesh.material.color.setHex(colors[idx]);
 
     const wn = document.getElementById('weapon-name');
     wn.textContent = this.player.weapons[idx].name;
@@ -254,21 +263,31 @@ class GameEngine {
       this.weaponBob *= 0.9;
     }
 
-    if (this.weaponGroup) {
+    // Обновление анимации оружия через метод самого оружия
+    const weapon = this.player.weapons[this.currentWeapon];
+    if (this.weaponGroup && weapon) {
       const bobX = Math.sin(this.weaponBob) * 0.015;
       const bobY = Math.cos(this.weaponBob * 2) * 0.01;
-      this.weaponGroup.position.set(bobX, bobY, 0);
-
-      if (this.fireTimer > 0) {
-        this.weaponGroup.position.z = -this.fireTimer * 0.1;
+      
+      // Базовое покачивание при ходьбе
+      this.weaponGroup.position.x = bobX;
+      this.weaponGroup.position.y = bobY;
+      
+      // Анимация через метод оружия
+      if (weapon.update) {
+        weapon.update(dt, this.weaponGroup, this.fireTimer > 0, this.reloading, this.reloadTimer);
       } else {
-        this.weaponGroup.position.z *= 0.8;
-      }
-
-      if (this.reloading) {
-        this.weaponGroup.rotation.x = -0.3 * Math.sin(this.reloadTimer * Math.PI);
-      } else {
-        this.weaponGroup.rotation.x *= 0.9;
+        // Fallback к старой реализации
+        if (this.fireTimer > 0) {
+          this.weaponGroup.position.z = -this.fireTimer * 0.1;
+        } else {
+          this.weaponGroup.position.z *= 0.8;
+        }
+        if (this.reloading) {
+          this.weaponGroup.rotation.x = -0.3 * Math.sin(this.reloadTimer * Math.PI);
+        } else {
+          this.weaponGroup.rotation.x *= 0.9;
+        }
       }
     }
 
@@ -308,127 +327,16 @@ class GameEngine {
       return; 
     }
     
-    if (this.input.mouse.left && w.ammo > 0 && !this.reloading) {
+    if (this.input.mouse.left && w.canFire() && !this.reloading) {
       if (w.auto || !this._wasFiring) {
         DEBUG.combat.trace('Выстрел', { weapon: w.name, ammo: w.ammo });
-        this.fireWeapon(w);
+        // Используем новый метод fire() из класса оружия
+        w.fire(this, this.camera, this.scene, this.audio, this.props, this.hud);
         this.fireTimer = w.fireRate;
-        w.ammo--;
         this.hud.update();
       }
     }
     this._wasFiring = this.input.mouse.left;
-  }
-
-  fireWeapon(w) {
-    this.audio.play(w.sound);
-
-    const mf = document.getElementById('muzzle-flash');
-    mf.style.opacity = 1;
-    setTimeout(() => mf.style.opacity = 0, 50);
-
-    if (this.gunLight) {
-      this.gunLight.intensity = 3;
-      setTimeout(() => { if (this.gunLight) this.gunLight.intensity = 0.3; }, 80);
-    }
-
-    if (w.type === 'ray' || w.type === 'ray_multi') {
-      const pellets = w.pellets || 1;
-      for (let i = 0; i < pellets; i++) {
-        this.raycastShot(w.damage, w.spread, w.color);
-      }
-    } else if (w.type === 'projectile') {
-      this.fireRocket(w);
-    }
-  }
-
-  raycastShot(damage, spread, color) {
-    DEBUG.combat.trace('raycastShot start', { damage, spread, color });
-    
-    // 1. Создаем направление стрельбы (с разбросом)
-    // Проверка: если вектор нулевой, не нормализуем его (это вызывает NaN)
-    const dir = new THREE.Vector3(
-      (Math.random() - 0.5) * spread,
-      (Math.random() - 0.5) * spread,
-      -1
-    );
-    
-    if (dir.lengthSq() === 0) {
-      DEBUG.combat.warn('raycastShot: нулевой вектор направления');
-      return; // Страховка от ошибки
-    }
-    dir.normalize().applyQuaternion(this.camera.quaternion);
-
-    let closestHit = null;
-    let closestDist = Infinity;
-
-    this.enemies.forEach(enemy => {
-      if (enemy.state === 'dead') return;
-      
-      const toEnemy = enemy.position.clone().sub(this.camera.position);
-      const dist = toEnemy.length(); // Вычисляем реальное расстояние
-
-      // Если враг слишком близко (внутри игрока) или в невидимой зоне, пропускаем
-      if (dist < 0.1 || dist > 100) return; 
-      
-      const dirToEnemy = toEnemy.clone().normalize();
-
-      // Математика перпендикуляра (проверка, попали ли в хитбокс)
-      const perpDist = this.camera.position.clone()
-        .add(dir.clone().multiplyScalar(toEnemy.dot(dir)))
-        .sub(enemy.position).length();
-
-      // Проверка попадания: в радиусе врага и перед камерой
-      if (perpDist < enemy.size && toEnemy.dot(dir) > 0 && dist < closestDist) {
-        closestDist = dist;
-        closestHit = enemy;
-        DEBUG.combat.trace('Потенциальное попадание', { enemy: enemy.type, dist });
-      }
-    });
-
-    // Если попали
-    if (closestHit) {
-      DEBUG.combat.info('Попадание во врага!', { enemy: closestHit.type, damage, dist: closestDist });
-      closestHit.takeDamage(damage);
-      this.audio.play('hit');
-      this.showHitMarker();
-      this.props.spawnParticles(closestHit.position.clone(), 0xff0000, 5);
-    } else {
-      DEBUG.combat.trace('Промах');
-    }
-
-    // Создаем трассер
-    // Если цели не найдено, рисуем луч на стандартное расстояние (100)
-    const tracerDist = closestHit ? closestDist : 100;
-    this.props.spawnTracer(this.camera.position.clone(), dir, tracerDist, color);
-  }
-
-  fireRocket(w) {
-    const dir = new THREE.Vector3(
-      (Math.random() - 0.5) * w.spread,
-      (Math.random() - 0.5) * w.spread,
-      -1
-    ).normalize().applyQuaternion(this.camera.quaternion);
-
-    const rocket = {
-      position: this.camera.position.clone().add(dir.clone().multiplyScalar(1)),
-      velocity: dir.clone().multiplyScalar(30),
-      damage: w.damage,
-      life: 3,
-      trail: []
-    };
-
-    const geo = new THREE.SphereGeometry(0.15, 6, 6);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xff4400 });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.copy(rocket.position);
-    this.scene.add(mesh);
-    rocket.mesh = mesh;
-
-    const light = new THREE.PointLight(0xff4400, 1, 8);
-    mesh.add(light);
-
-    this.projectiles.push(rocket);
   }
 
   updateProjectiles(dt) {
