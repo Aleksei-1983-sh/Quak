@@ -1,4 +1,4 @@
-import { Weapon } from './index.js';
+import { Weapon } from './Weapon.js';
 import { Rocket } from '../projectiles/index.js';   // путь относительно текущей папки
 
 // Ракетница - оружие с проектильным взрывным уроном (улучшенная графика и эффекты)

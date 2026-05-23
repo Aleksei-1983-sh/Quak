@@ -169,5 +169,5 @@ This file is the source-of-truth project snapshot for architecture, stage, and c
 
 ---
 
-*Last Updated: 2026-05-23 (UTC, weapon architecture refactor)*  
+*Last Updated: 2026-05-23 (UTC, ES module bridge for weapons in index.html)*  
 *Maintained by: Development Team & AI Agents*
