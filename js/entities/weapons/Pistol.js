@@ -1,5 +1,8 @@
-// Пистолет - базовое оружие с низким уроном но высокой точностью
-class Pistol extends Weapon {
+// Пистолет - точный полуавтомат
+import { Weapon } from './index.js';
+import { Rocket } from '../projectiles/index.js';   // путь относительно текущей папки
+
+export class Pistol extends Weapon {
   constructor() {
     super({
       name: 'PISTOL',
@@ -8,12 +11,15 @@ class Pistol extends Weapon {
       fireRate: 0.25,
       ammo: 50,
       maxAmmo: 50,
+      reloadTime: 1.3,
       spread: 0.01,
       sound: 'pistol',
       color: 0x888888,
       auto: false,
       icon: '🔫',
-      recoilAmount: 0.08,
+      recoilAmount: 0.12,
+      fireKick: 0.1,
+      recoverySpeed: 13,
       muzzleFlashColor: 0xffffaa,
       tracerColor: 0xcccccc,
       modelConfig: {
@@ -24,7 +30,7 @@ class Pistol extends Weapon {
       }
     });
   }
-  
+
   // Создать уникальную 3D модель пистолета
   createModel(THREE) {
     const weaponGroup = new THREE.Group();
@@ -72,38 +78,5 @@ class Pistol extends Weapon {
     weaponGroup.add(gunLight);
     
     return { weaponGroup, weaponMesh: frame, gunLight };
-  }
-  
-  // Специфичный метод для пистолета - быстрый выстрел
-  quickShot() {
-    const originalDamage = this.damage;
-    const originalFireRate = this.fireRate;
-    this.damage = 10;
-    this.fireRate = 0.15;
-    
-    setTimeout(() => {
-      this.damage = originalDamage;
-      this.fireRate = originalFireRate;
-    }, 500);
-  }
-  
-  // Анимация для пистолета - более резкая отдача
-  update(dt, weaponGroup, isFiring, isReloading, reloadTimer) {
-    if (!weaponGroup) return;
-    
-    if (isFiring) {
-      weaponGroup.position.z = -this.recoilAmount;
-      weaponGroup.rotation.x = 0.1; // Подбрасывание ствола вверх
-    } else {
-      weaponGroup.position.z *= 0.85;
-      weaponGroup.rotation.x *= 0.85;
-    }
-    
-    if (isReloading) {
-      weaponGroup.rotation.x = -0.5 * Math.sin(reloadTimer * Math.PI);
-      weaponGroup.rotation.z = 0.3 * Math.cos(reloadTimer * Math.PI);
-    } else {
-      weaponGroup.rotation.z *= 0.9;
-    }
   }
 }

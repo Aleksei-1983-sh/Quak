@@ -1,5 +1,8 @@
-// Винтовка (Pulse Rifle) - базовое автоматическое оружие
-class Rifle extends Weapon {
+// Винтовка (Pulse Rifle) - автоматическое оружие
+
+import { Weapon } from './index.js';
+
+export class Rifle extends Weapon {
   constructor() {
     super({
       name: 'PULSE RIFLE',
@@ -8,16 +11,18 @@ class Rifle extends Weapon {
       fireRate: 0.15,
       ammo: 200,
       maxAmmo: 200,
+      reloadTime: 1.8,
       spread: 0.02,
       sound: 'pulse_rifle',
       color: 0x00ff44,
       auto: true,
       icon: '🔫',
-      recoilAmount: 0.06,
+      recoilAmount: 0.08,
+      fireKick: 0.08,
+      recoverySpeed: 11,
       muzzleFlashColor: 0x00ff88,
       tracerColor: 0x00ff44,
       modelConfig: {
-        barrelLength: 0.4,
         stockColor: 0x2d2d2d,
         bodyColor: 0x1a4d1a,
         accentColor: 0x00ff44,
@@ -25,8 +30,8 @@ class Rifle extends Weapon {
       }
     });
   }
-  
-  // Создать уникальную 3D модель винтовки
+
+// Создать уникальную 3D модель винтовки
   createModel(THREE) {
     const weaponGroup = new THREE.Group();
     
@@ -88,38 +93,5 @@ class Rifle extends Weapon {
     weaponGroup.add(gunLight);
     
     return { weaponGroup, weaponMesh: body, gunLight };
-  }
-  
-  // Специфичный метод для винтовки - режим точной стрельбы
-  setPrecisionMode(precision) {
-    if (precision) {
-      this.spread = 0.01;
-      this.fireRate = 0.3;
-    } else {
-      this.spread = 0.02;
-      this.fireRate = 0.15;
-    }
-  }
-  
-  // Анимация для винтовки - плавная отдача при автоматической стрельбе
-  update(dt, weaponGroup, isFiring, isReloading, reloadTimer) {
-    if (!weaponGroup) return;
-    
-    if (isFiring) {
-      weaponGroup.position.z = -this.recoilAmount;
-      weaponGroup.rotation.x = 0.05;
-      weaponGroup.position.y = Math.sin(Date.now() * 0.05) * 0.005; // Вибрация
-    } else {
-      weaponGroup.position.z *= 0.88;
-      weaponGroup.rotation.x *= 0.88;
-      weaponGroup.position.y *= 0.88;
-    }
-    
-    if (isReloading) {
-      weaponGroup.rotation.x = -0.4 * Math.sin(reloadTimer * Math.PI);
-      weaponGroup.position.y = 0.05 * Math.cos(reloadTimer * Math.PI);
-    } else {
-      weaponGroup.position.y *= 0.9;
-    }
   }
 }

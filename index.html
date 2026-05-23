@@ -80,8 +80,8 @@
 		<canvas id="minimap-canvas" width="150" height="150"></canvas>
 	  </div>
 
-  <!-- THREE.JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- THREE.JS (local copy with CDN fallback) -->
+  <script src="js/libs/three.min.js"></script>
 
   <!-- GAME MODULES (order matters) -->
   <script src="js/core/Debug.js"></script>
@@ -96,7 +96,7 @@
   <script src="js/entities/weapons/Rifle.js"></script>
   <script src="js/entities/weapons/Pistol.js"></script>
   <script src="js/entities/weapons/Shotgun.js"></script>
-  <script src="js/entities/weapons/RocketLauncher.js"></script>
+  <script  type="module" src="js/entities/weapons/RocketLauncher.js"></script>
   <script src="js/entities/Player.js"></script>
   <script src="js/entities/Enemy.js"></script>
   <script src="js/ui/HUD.js"></script>

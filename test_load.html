@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<body>
+<h1>Testing Game Load</h1>
+<div id="status">Loading Three.js...</div>
+<script src="js/libs/three.min.js"></script>
+<script>
+document.getElementById('status').innerHTML = 
+  typeof THREE !== 'undefined' && THREE.Scene ? 
+  '<span style="color:green;font-size:24px">✅ THREE.js loaded! Version: ' + THREE.REVISION + '</span>' : 
+  '<span style="color:red;font-size:24px">❌ THREE.js NOT loaded</span>';
+console.log('THREE:', typeof THREE, THREE.REVISION);
+</script>
+</body>
+</html>

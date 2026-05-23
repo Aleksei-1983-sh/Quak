@@ -1,5 +1,7 @@
 // Дробовик - оружие ближнего боя с множеством пуль
-class Shotgun extends Weapon {
+import { Weapon } from './index.js';
+
+export class Shotgun extends Weapon {
   constructor() {
     super({
       name: 'SHOTGUN',
@@ -8,17 +10,20 @@ class Shotgun extends Weapon {
       fireRate: 0.8,
       ammo: 20,
       maxAmmo: 20,
+      reloadTime: 2.2,
       pellets: 8,
       spread: 0.08,
       sound: 'shotgun',
       color: 0xff8800,
       auto: false,
       icon: '💥',
-      recoilAmount: 0.15,
+      recoilAmount: 0.2,
+      fireKick: 0.17,
+      recoverySpeed: 8,
+      reloadTilt: 0.45,
       muzzleFlashColor: 0xffaa00,
       tracerColor: 0xff8800,
       modelConfig: {
-        barrelLength: 0.5,
         stockColor: 0x4a3728,
         receiverColor: 0x555555,
         barrelColor: 0x333333,
@@ -26,8 +31,8 @@ class Shotgun extends Weapon {
       }
     });
   }
-  
-  // Создать уникальную 3D модель дробовика
+
+// Создать уникальную 3D модель дробовика
   createModel(THREE) {
     const weaponGroup = new THREE.Group();
     
@@ -90,49 +95,5 @@ class Shotgun extends Weapon {
     weaponGroup.add(gunLight);
     
     return { weaponGroup, weaponMesh: receiver, gunLight };
-  }
-  
-  // Специфичный метод для дробовика - мощный выстрел
-  powerShot() {
-    const originalPellets = this.pellets;
-    const originalSpread = this.spread;
-    const originalDamage = this.damage;
-    
-    this.pellets = 12;
-    this.spread = 0.12;
-    this.damage = 6;
-    
-    setTimeout(() => {
-      this.pellets = originalPellets;
-      this.spread = originalSpread;
-      this.damage = originalDamage;
-    }, 1000);
-  }
-  
-  // Получить количество пуль
-  getPelletCount() {
-    return this.pellets;
-  }
-  
-  // Анимация для дробовика - сильная отдача, перезарядка помповым движением
-  update(dt, weaponGroup, isFiring, isReloading, reloadTimer) {
-    if (!weaponGroup) return;
-    
-    if (isFiring) {
-      weaponGroup.position.z = -this.recoilAmount;
-      weaponGroup.rotation.x = 0.15; // Сильное подбрасывание
-      weaponGroup.position.y = 0.02;
-    } else {
-      weaponGroup.position.z *= 0.8;
-      weaponGroup.rotation.x *= 0.8;
-      weaponGroup.position.y *= 0.8;
-    }
-    
-    if (isReloading) {
-      // Помповое движение вперед-назад
-      const pumpPhase = Math.sin(reloadTimer * Math.PI * 2);
-      weaponGroup.position.z = pumpPhase * 0.08;
-      weaponGroup.rotation.x = -0.2 * Math.cos(reloadTimer * Math.PI);
-    }
   }
 }
