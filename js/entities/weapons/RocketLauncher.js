@@ -280,7 +280,10 @@ class RocketLauncher extends Weapon {
     this.recoilOffset.lerp(new THREE.Vector3(0, 0, 0), returnSpeed);
     
     // Возврат вращения (ствол опускается, наклон выправляется)
-    this.fireRot.lerp(new THREE.Euler(0, 0, 0), returnSpeed);
+    // Euler.lerp не существует, поэтому интерполируем каждый компонент отдельно
+    this.fireRot.x += (0 - this.fireRot.x) * returnSpeed;
+    this.fireRot.y += (0 - this.fireRot.y) * returnSpeed;
+    this.fireRot.z += (0 - this.fireRot.z) * returnSpeed;
 
     // ==========================================
     // 🔁 АНИМАЦИЯ ПЕРЕЗАРЯДКИ
