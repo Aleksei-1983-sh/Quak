@@ -19,6 +19,42 @@ class BaseWeapon {
     this.recoilAmount = config.recoilAmount || 0.1;
     this.muzzleFlashColor = config.muzzleFlashColor || 0xffff00;
     this.tracerColor = config.tracerColor || this.color;
+    
+    // Переменные состояния анимации
+    this.recoilOffset = new THREE.Vector3(0, 0, 0);
+    this.fireRot = new THREE.Euler(0, 0, 0, 'YXZ');
+    this.walkSway = new THREE.Vector3(0, 0, 0);
+    this.hasFiredThisFrame = false;
+    this.weaponGroup = null;
+    this.model = null;
+    this.lastMoveDir = new THREE.Vector3(0, 0, 0);
+    
+    // Получить тип оружия для мета-данных
+    this.weaponType = this.getWeaponType();
+  }
+  
+  // Определить тип оружия для получения мета-данных
+  getWeaponType() {
+    const name = this.name.toLowerCase();
+    if (name.includes('pistol')) return 'pistol';
+    if (name.includes('rifle')) return 'rifle';
+    if (name.includes('shotgun')) return 'shotgun';
+    if (name.includes('rocket')) return 'rocketLauncher';
+    return 'pistol'; // по умолчанию
+  }
+  
+  // Получить мета-данные анимации для этого оружия
+  getAnimationMeta() {
+    if (typeof WEAPON_ANIMATION_META !== 'undefined') {
+      return WEAPON_ANIMATION_META[this.weaponType] || WEAPON_ANIMATION_META.pistol;
+    }
+    // Резервные значения если мета-данные не загружены
+    return {
+      idleSway: { amount: 0.005, speed: 0.002 },
+      walkSway: { amountX: 0.15, amountY: 0.03, amountZ: 0.15, speed: 0.01, lerpFactor: 0.15 },
+      runSwayMultiplier: 1.0,
+      recoil: { velocity: -5.0, muzzleRise: 0.05, sideTilt: 0.02, returnSpeed: 0.2 }
+    };
   }
   
   // Метод для получения текущей информации об оружии
@@ -82,22 +118,101 @@ class BaseWeapon {
     return { weaponGroup, weaponMesh, gunLight };
   }
   
-  // Обновление анимации оружия (переопределяется в наследниках)
+  // Обновление анимации оружия (единая реализация для всех оружий)
   update(dt, weaponGroup, isFiring, isReloading, reloadTimer) {
     if (!weaponGroup) return;
     
-    // Анимация отдачи при выстреле
-    if (isFiring) {
-      weaponGroup.position.z = -this.recoilAmount;
-    } else {
-      weaponGroup.position.z *= 0.9;
+    // Получить мета-данные для этого оружия
+    const meta = this.getAnimationMeta();
+    
+    // Сброс флага выстрела в начале кадра
+    this.hasFiredThisFrame = false;
+    
+    // Получаем информацию о движении игрока
+    const game = window.gameInstance;
+    let moveSpeed = 0;
+    let moveDir = new THREE.Vector3(0, 0, 0);
+    let isRunning = false;
+    
+    if (game && game.player) {
+      const input = game.input;
+      const yaw = game.player.yaw;
+      
+      let forward = 0;
+      let right = 0;
+      
+      if (input.keys['KeyW'] || input.keys['ArrowUp']) forward = 1;
+      if (input.keys['KeyS'] || input.keys['ArrowDown']) forward = -1;
+      if (input.keys['KeyD'] || input.keys['ArrowRight']) right = 1;
+      if (input.keys['KeyA'] || input.keys['ArrowLeft']) right = -1;
+      
+      // Проверка бега (Shift)
+      if (input.keys['ShiftLeft'] || input.keys['ShiftRight']) {
+        isRunning = true;
+      }
+      
+      if (forward !== 0 || right !== 0) {
+        const len = Math.sqrt(forward * forward + right * right);
+        forward /= len;
+        right /= len;
+        
+        moveDir.x = Math.sin(yaw) * forward + Math.cos(yaw) * right;
+        moveDir.z = Math.cos(yaw) * forward - Math.sin(yaw) * right;
+        moveSpeed = Math.sqrt(moveDir.x * moveDir.x + moveDir.z * moveDir.z);
+      }
     }
+    
+    // === ПОКАЧИВАНИЕ ПРИ ХОДЬБЕ/БЕГЕ ===
+    const runMultiplier = isRunning ? meta.runSwayMultiplier : 1.0;
+    
+    if (moveSpeed > 0.1) {
+      const targetSwayX = -moveDir.x * meta.walkSway.amountX * runMultiplier;
+      const targetSwayY = Math.sin(Date.now() * meta.walkSway.speed) * meta.walkSway.amountY * moveSpeed * runMultiplier;
+      const targetSwayZ = -moveDir.z * meta.walkSway.amountZ * runMultiplier;
+      
+      this.walkSway.x += (targetSwayX - this.walkSway.x) * meta.walkSway.lerpFactor;
+      this.walkSway.y += (targetSwayY - this.walkSway.y) * meta.walkSway.lerpFactor;
+      this.walkSway.z += (targetSwayZ - this.walkSway.z) * meta.walkSway.lerpFactor;
+    } else {
+      // Возврат в нейтральное положение когда игрок стоит
+      this.walkSway.x += (0 - this.walkSway.x) * 0.1;
+      this.walkSway.y += (0 - this.walkSway.y) * 0.1;
+      this.walkSway.z += (0 - this.walkSway.z) * 0.1;
+    }
+    
+    // Применяем покачивание от ходьбы
+    weaponGroup.position.x += this.walkSway.x;
+    weaponGroup.position.y += this.walkSway.y;
+    weaponGroup.position.z += this.walkSway.z;
+    
+    // === ОТДАЧА ПРИ ВЫСТРЕЛЕ ===
+    if (isFiring && !this.hasFiredThisFrame) {
+      this.recoilOffset.z += meta.recoil.velocity * dt;
+      this.fireRot.x += meta.recoil.muzzleRise;
+      this.fireRot.z += (Math.random() - 0.5) * meta.recoil.sideTilt;
+      this.hasFiredThisFrame = true;
+    }
+    
+    // Возврат оружия на место (плавный lerp)
+    this.recoilOffset.lerp(new THREE.Vector3(0, 0, 0), meta.recoil.returnSpeed);
+    this.fireRot.x += (0 - this.fireRot.x) * meta.recoil.returnSpeed;
+    this.fireRot.y += (0 - this.fireRot.y) * meta.recoil.returnSpeed;
+    this.fireRot.z += (0 - this.fireRot.z) * meta.recoil.returnSpeed;
+    
+    // === ПОКАЧИВАНИЕ В ПОКОЕ (IDLE SWAY / ДЫХАНИЕ) ===
+    const idleSway = Math.sin(Date.now() * meta.idleSway.speed) * meta.idleSway.amount;
+    this.fireRot.x += idleSway;
+    
+    // Применяем отдачу и вращение к модели
+    weaponGroup.position.z += this.recoilOffset.z;
+    weaponGroup.rotation.x = this.fireRot.x;
+    weaponGroup.rotation.y = this.fireRot.y;
+    weaponGroup.rotation.z = this.fireRot.z;
     
     // Анимация перезарядки
     if (isReloading) {
       weaponGroup.rotation.x = -0.3 * Math.sin(reloadTimer * Math.PI);
-    } else {
-      weaponGroup.rotation.x *= 0.9;
+      weaponGroup.rotation.z = 0.2 * Math.cos(reloadTimer * Math.PI);
     }
   }
   
