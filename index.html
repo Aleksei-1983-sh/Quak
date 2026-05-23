@@ -92,11 +92,13 @@
   <script src="js/world/Collision.js"></script>
   <script src="js/world/Level.js"></script>
   <script src="js/world/Props.js"></script>
-  <script src="js/entities/weapons/Weapon.js"></script>
-  <script src="js/entities/weapons/Rifle.js"></script>
-  <script src="js/entities/weapons/Pistol.js"></script>
-  <script src="js/entities/weapons/Shotgun.js"></script>
-  <script  type="module" src="js/entities/weapons/RocketLauncher.js"></script>
+  <script type="module">
+    import { Rifle, Pistol, Shotgun, RocketLauncher } from './js/entities/weapons/index.js';
+    window.Rifle = Rifle;
+    window.Pistol = Pistol;
+    window.Shotgun = Shotgun;
+    window.RocketLauncher = RocketLauncher;
+  </script>
   <script src="js/entities/Player.js"></script>
   <script src="js/entities/Enemy.js"></script>
   <script src="js/ui/HUD.js"></script>

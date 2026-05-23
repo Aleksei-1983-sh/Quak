@@ -1,5 +1,5 @@
 // Пистолет - точный полуавтомат
-import { Weapon } from './index.js';
+import { Weapon } from './Weapon.js';
 import { Rocket } from '../projectiles/index.js';   // путь относительно текущей папки
 
 export class Pistol extends Weapon {
