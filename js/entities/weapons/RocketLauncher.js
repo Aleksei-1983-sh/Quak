@@ -192,7 +192,11 @@ class RocketLauncher extends Weapon {
   
   // Анимация для ракетницы - очень сильная отдача
   update(dt, weaponGroup, isFiring, isReloading, reloadTimer) {
-    super.update(dt, weaponGroup, isFiring, isReloading, reloadTimer);
+    if (!weaponGroup) return;
+
+    // Сохраняем ссылку на weaponGroup для использования в методе
+    this.weaponGroup = weaponGroup;
+    this.isFiring = isFiring;
 
     // ==========================================
     // 🎨 НАСТРОЙКИ АНИМАЦИИ РОКЕТНИЦЫ
@@ -250,11 +254,25 @@ class RocketLauncher extends Weapon {
     //   0.05  -> заметное покачивание (усталость, тяжелое оружие)
     const idleSwayAmount = 0.03;
 
+    // Инициализация переменных отдачи, если их нет
+    if (this.recoilOffset === undefined) {
+      this.recoilOffset = new THREE.Vector3(0, 0, 0);
+    }
+    if (this.fireRot === undefined) {
+      this.fireRot = new THREE.Euler(0, 0, 0, 'YXZ');
+    }
+    if (this.hasFiredThisFrame === undefined) {
+      this.hasFiredThisFrame = false;
+    }
+
+    // Сброс флага выстрела в начале кадра
+    this.hasFiredThisFrame = false;
+
     // ==========================================
     // 💥 ЛОГИКА ОТДАЧИ ПРИ ВЫСТРЕЛЕ
     // ==========================================
     
-    if (this.isFiring && !this.hasFiredThisFrame) {
+    if (isFiring && !this.hasFiredThisFrame) {
       // Применяем мгновенный импульс отдачи
       // Оружие резко смещается назад по оси Z
       this.recoilOffset.z += recoilVelocity * dt;
@@ -266,8 +284,6 @@ class RocketLauncher extends Weapon {
       this.fireRot.z += (Math.random() - 0.5) * 0.05;
 
       this.hasFiredThisFrame = true;
-    } else if (!this.isFiring) {
-      this.hasFiredThisFrame = false;
     }
 
     // ==========================================
@@ -291,43 +307,42 @@ class RocketLauncher extends Weapon {
     if (isReloading) {
       // Медленное откидывание трубы ракетницы назад
       // Math.sin создает плавное движение туда-обратно
-      const reloadProgress = reloadTimer / this.reloadTime;
+      const reloadProgress = reloadTimer / 1.5; // reloadTime = 1.5 сек
       const tiltAngle = -0.8 * Math.sin(reloadProgress * Math.PI);
       
       // Наклон оружия вверх при перезарядке
-      this.weaponGroup.rotation.x = tiltAngle;
+      weaponGroup.rotation.x = tiltAngle;
       
       // Подъем оружия выше для удобства перезарядки
-      this.weaponGroup.position.y = 0.15 * Math.cos(reloadProgress * Math.PI);
+      weaponGroup.position.y = 0.15 * Math.cos(reloadProgress * Math.PI);
       
       // Небольшое смещение назад
-      this.weaponGroup.position.z = 0.1 * (1 - reloadProgress);
+      weaponGroup.position.z = 0.1 * (1 - reloadProgress);
     } else {
       // Плавный возврат в нейтральную позицию после перезарядки
-      this.weaponGroup.rotation.x *= 0.85;
-      this.weaponGroup.position.lerp(new THREE.Vector3(0, 0, 0), 0.2);
+      weaponGroup.rotation.x *= 0.85;
+      weaponGroup.position.y *= 0.9;
     }
 
     // ==========================================
     // 🎭 ПРИМЕНЕНИЕ ТРАНСФОРМАЦИЙ К МОДЕЛИ
     // ==========================================
-    if (this.model) {
-      // Базовая позиция с учетом отдачи
-      this.model.position.copy(this.recoilOffset);
-      
-      // Добавляем "дыхание" - легкое покачивание в покое
-      const idleSway = Math.sin(Date.now() * 0.003) * idleSwayAmount;
-      this.model.position.y += idleSway;
-      this.model.position.x += idleSway * 0.5;
-      
-      // Применяем вращение от отдачи (подъем ствола)
-      this.model.rotation.x = this.fireRot.x;
-      
-      // Боковой наклон от отдачи + небольшой наклон для красоты
-      this.model.rotation.z = this.fireRot.z + (this.recoilOffset.z * sideTiltMultiplier);
-      
-      // Небольшой поворот вбок при движении отдачи
-      this.model.rotation.y = this.recoilOffset.z * 0.01;
-    }
+    
+    // Базовая позиция с учетом отдачи
+    weaponGroup.position.z += this.recoilOffset.z;
+    
+    // Добавляем "дыхание" - легкое покачивание в покое
+    const idleSway = Math.sin(Date.now() * 0.003) * idleSwayAmount;
+    weaponGroup.position.y += idleSway;
+    weaponGroup.position.x += idleSway * 0.5;
+    
+    // Применяем вращение от отдачи (подъем ствола)
+    weaponGroup.rotation.x = this.fireRot.x;
+    
+    // Боковой наклон от отдачи + небольшой наклон для красоты
+    weaponGroup.rotation.z = this.fireRot.z + (this.recoilOffset.z * sideTiltMultiplier);
+    
+    // Небольшой поворот вбок при движении отдачи
+    weaponGroup.rotation.y = this.recoilOffset.z * 0.01;
   }
 }

@@ -86,12 +86,8 @@ class BaseWeapon {
   update(dt, weaponGroup, isFiring, isReloading, reloadTimer) {
     if (!weaponGroup) return;
     
-    // Анимация отдачи при выстреле
-    if (isFiring) {
-      weaponGroup.position.z = -this.recoilAmount;
-    } else {
-      weaponGroup.position.z *= 0.9;
-    }
+    // Базовая реализация - только анимация перезарядки
+    // Анимация отдачи реализуется в классах-наследниках
     
     // Анимация перезарядки
     if (isReloading) {
