@@ -12,6 +12,12 @@ class HUD {
       armorBar: document.getElementById('armor-bar'),
       killFeed: document.getElementById('kill-feed'),
       minimapCanvas: document.getElementById('minimap-canvas'),
+      weaponIcons: [
+        document.getElementById('weapon-icon-1'),
+        document.getElementById('weapon-icon-2'),
+        document.getElementById('weapon-icon-3'),
+        document.getElementById('weapon-icon-4')
+      ]
     };
 
     this.minimapCtx = this.els.minimapCanvas.getContext('2d');
@@ -21,6 +27,7 @@ class HUD {
     this.tileSize = 0;
     this.mapOffsetX = 0;
     this.mapOffsetZ = 0;
+    this.currentWeaponIndex = 0;
   }
 
   update() {
@@ -35,11 +42,14 @@ class HUD {
     this.els.healthVal.textContent = Math.ceil(p.health);
     this.els.armorVal.textContent = Math.ceil(p.armor);
     this.els.ammoVal.textContent = w.ammo;
-    this.els.ammoType.textContent = w.name;
+    this.els.ammoType.textContent = `${w.icon} ${w.name}`;
     this.els.scoreVal.textContent = this.game.score;
 
     this.els.healthBar.style.width = `${(p.health / p.maxHealth) * 100}%`;
     this.els.armorBar.style.width = `${(p.armor / p.maxArmor) * 100}%`;
+
+    // Обновление иконок оружия
+    this.updateWeaponIcons();
 
     const hVal = this.els.healthVal;
     if (p.health < 25) {
@@ -52,6 +62,36 @@ class HUD {
     }
     
     DEBUG.ui.trace('HUD update end');
+  }
+
+  // Метод для обновления иконок оружия
+  updateWeaponIcons() {
+    const weapons = this.game.player.weapons;
+    const currentIdx = this.game.currentWeapon;
+    
+    if (!this.els.weaponIcons || !weapons) return;
+    
+    weapons.forEach((weapon, idx) => {
+      const iconEl = this.els.weaponIcons[idx];
+      if (iconEl) {
+        // Обновляем иконку и патроны
+        iconEl.innerHTML = `${weapon.icon}<span class="weapon-ammo">${weapon.ammo}</span>`;
+        
+        // Подсветка текущего оружия
+        if (idx === currentIdx) {
+          iconEl.classList.add('active');
+        } else {
+          iconEl.classList.remove('active');
+        }
+        
+        // Показываем предупреждение если мало патронов
+        if (weapon.ammo <= weapon.maxAmmo * 0.2) {
+          iconEl.classList.add('low-ammo');
+        } else {
+          iconEl.classList.remove('low-ammo');
+        }
+      }
+    });
   }
 
   showKillFeed(type, score) {

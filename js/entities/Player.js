@@ -1,20 +1,5 @@
-const WEAPONS = [
-  {
-	name: 'PULSE RIFLE', type: 'ray', damage: 12, fireRate: 0.15,
-	ammo: 200, maxAmmo: 200, spread: 0.02, sound: 'pulse_rifle',
-	color: 0x00ff44, auto: true
-  },
-  {
-	name: 'SHOTGUN', type: 'ray_multi', damage: 8, fireRate: 0.8,
-	ammo: 20, maxAmmo: 20, pellets: 8, spread: 0.08, sound: 'shotgun',
-	color: 0xff8800, auto: false
-  },
-  {
-	name: 'ROCKET LAUNCHER', type: 'projectile', damage: 100, fireRate: 0.7,
-	ammo: 10, maxAmmo: 10, spread: 0.01, sound: 'rocket',
-	color: 0xff4400, auto: false
-  }
-];
+// Подключаем классы оружия из отдельных файлов
+// Классы должны быть загружены через HTML перед этим файлом
 
 class Player {
   constructor(game) {
@@ -26,10 +11,18 @@ class Player {
 	this.maxHealth = 100;
 	this.armor = 0;
 	this.maxArmor = 100;
-	this.weapons = JSON.parse(JSON.stringify(WEAPONS));
+	
+	// Создаем массив оружия используя новые классы
+	this.weapons = [
+	  new Rifle(),
+	  new Pistol(),
+	  new Shotgun(),
+	  new RocketLauncher()
+	];
+	
 	this.onGround = true;
 	this.sprinting = false;
-	this.godMode = true; // <--- ДОБАВИТЬ ЭТУ СТРОКУ
+	this.godMode = true;
   }
 
   update(dt) {
