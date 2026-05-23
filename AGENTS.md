@@ -147,16 +147,6 @@ This file serves as the single source of truth for:
 - Maintain the markdown structure
 - Update the snapshot date to current date
 
-#### 🚫 DO NOT REMOVE FROM .gitignore
-**IMPORTANT:** The following entries in `.gitignore` must NEVER be removed:
-```
-# Vim swap and backup files
-*.swp
-*.swo
-*~
-```
-These prevent temporary editor files from being committed to the repository. Removing them will cause clutter in version control.
-
 **FAILURE TO UPDATE THIS FILE MAY RESULT IN OUTDATED ARCHITECTURE UNDERSTANDING AND INCORRECT ASSUMPTIONS ABOUT THE CODEBASE.**
 
 ---
