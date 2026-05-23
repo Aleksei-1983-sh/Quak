@@ -95,6 +95,9 @@ class GameEngine {
       this.weaponGroup = model.weaponGroup;
       this.weaponMesh = model.weaponMesh;
       this.gunLight = model.gunLight;
+      // Сохраняем ссылку на модель оружия для анимации
+      weapon.model = this.weaponGroup;
+      weapon.weaponGroup = this.weaponGroup;
     } else {
       // Fallback к старой реализации
       this.weaponGroup = new THREE.Group();

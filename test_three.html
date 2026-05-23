@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Three.js</title>
+</head>
+<body>
+    <h1>Testing Three.js Load</h1>
+    <div id="status">Loading...</div>
+    
+    <script src="js/libs/three.min.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        if (typeof THREE !== 'undefined' && THREE.Scene) {
+            status.innerHTML = '<span style="color:green; font-size:24px;">✅ THREE.js loaded successfully!</span>';
+            console.log('THREE version:', THREE.REVISION);
+        } else {
+            status.innerHTML = '<span style="color:red; font-size:24px;">❌ THREE.js NOT loaded</span>';
+            console.error('THREE is undefined:', typeof THREE);
+        }
+    </script>
+</body>
+</html>
