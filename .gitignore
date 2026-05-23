@@ -1,1 +1,45 @@
-(js/entities/weapons/RocketLauncher.js)
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
+.env.local
+.env.*
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Compiled JavaScript
+*.min.js
+
+# OS generated files
+.DS_Store
+Thumbs.db
+```

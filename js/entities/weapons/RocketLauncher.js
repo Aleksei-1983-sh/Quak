@@ -24,6 +24,13 @@ class RocketLauncher extends Weapon {
         sightColor: 0x888888
       }
     });
+    
+    // Инициализация переменных отдачи для анимации
+    this.recoilOffset = new THREE.Vector3(0, 0, 0);
+    this.fireRot = new THREE.Euler(0, 0, 0);
+    this.hasFiredThisFrame = false;
+    this.weaponGroup = null;
+    this.model = null;
   }
   
   // Создать уникальную 3D модель ракетницы
