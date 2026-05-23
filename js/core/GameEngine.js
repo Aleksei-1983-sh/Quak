@@ -220,9 +220,9 @@ class GameEngine {
 
   reload() {
     const w = this.player.weapons[this.currentWeapon];
-    if (w.ammo >= w.maxAmmo || this.reloading) return;
+    if (!w.canReload() || this.reloading) return;
     this.reloading = true;
-    this.reloadTimer = 1.5;
+    this.reloadTimer = w.reloadTime || 1.5;
   }
 
   update(dt) {
@@ -247,7 +247,7 @@ class GameEngine {
       this.reloadTimer -= dt;
       if (this.reloadTimer <= 0) {
         const w = this.player.weapons[this.currentWeapon];
-        w.ammo = w.maxAmmo;
+        w.reload();
         this.reloading = false;
         DEBUG.combat.info('Перезарядка завершена');
         this.hud.update();
@@ -270,16 +270,20 @@ class GameEngine {
     // Обновление анимации оружия через метод самого оружия
     const weapon = this.player.weapons[this.currentWeapon];
     if (this.weaponGroup && weapon) {
-      const bobX = Math.sin(this.weaponBob) * 0.015;
-      const bobY = Math.cos(this.weaponBob * 2) * 0.01;
-      
-      // Базовое покачивание при ходьбе
-      this.weaponGroup.position.x = bobX;
-      this.weaponGroup.position.y = bobY;
-      
+      const movingNow = this.input.isPressed('KeyW') || this.input.isPressed('KeyS') || this.input.isPressed('KeyA') || this.input.isPressed('KeyD');
+      const reloadDuration = weapon.reloadTime || 1.5;
+      const reloadProgress = this.reloading ? 1 - Math.max(0, this.reloadTimer) / reloadDuration : 0;
+
       // Анимация через метод оружия
       if (weapon.update) {
-        weapon.update(dt, this.weaponGroup, this.fireTimer > 0, this.reloading, this.reloadTimer);
+        weapon.setState({
+          isFiring: this.fireTimer > 0,
+          isReloading: this.reloading,
+          isMoving: movingNow && this.player.onGround,
+          isSprinting: !!this.player.sprinting,
+          reloadProgress
+        });
+        weapon.update(dt, this.weaponGroup);
       } else {
         // Fallback к старой реализации
         if (this.fireTimer > 0) {
