@@ -106,7 +106,7 @@ class Rifle extends Weapon {
     if (!weaponGroup) return;
 
     // Параметры анимации
-    const recoilVelocity = -8.0; // Сила отдачи назад (автоматическое оружие)
+    const recoilVelocity = 8.0; // Сила отдачи назад (положительное = откат к игроку)
     const muzzleRise = 0.03;     // Подъем ствола вверх (меньше чем у пистолета)
     const returnSpeed = 0.25;    // Скорость возврата оружия на место
     const sideTiltMultiplier = 0.015; // Боковой наклон при отдаче

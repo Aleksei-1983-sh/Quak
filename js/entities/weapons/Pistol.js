@@ -92,7 +92,7 @@ class Pistol extends Weapon {
     if (!weaponGroup) return;
 
     // Параметры анимации
-    const recoilVelocity = -5.0; // Сила отдачи назад
+    const recoilVelocity = 5.0; // Сила отдачи назад (положительное = откат к игроку)
     const muzzleRise = 0.05;     // Подъем ствола вверх (в радианах)
     const returnSpeed = 0.2;     // Скорость возврата оружия на место
     const sideTiltMultiplier = 0.02; // Боковой наклон при отдаче

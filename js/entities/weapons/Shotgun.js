@@ -119,7 +119,7 @@ class Shotgun extends Weapon {
     if (!weaponGroup) return;
 
     // Параметры анимации
-    const recoilVelocity = -15.0; // Сила отдачи назад (очень сильная)
+    const recoilVelocity = 15.0; // Сила отдачи назад (положительное = откат к игроку, очень сильная)
     const muzzleRise = 0.12;      // Подъем ствола вверх (сильный)
     const returnSpeed = 0.15;     // Скорость возврата оружия на место (медленная)
     const sideTiltMultiplier = 0.03; // Боковой наклон при отдаче
