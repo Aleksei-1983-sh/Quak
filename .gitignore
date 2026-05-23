@@ -1,1 +1,1 @@
-(js/entities/weapons/RocketLauncher.js, js/entities/weapons/Weapon.js)
+Nothing should be ignored in this case, as the modified files are all source code files (.js) and no build artifacts, dependencies, or temporary files are present in the changes.
