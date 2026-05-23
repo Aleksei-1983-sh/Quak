@@ -1,1 +1,1 @@
-Nothing needs to be added to .gitignore since only a markdown file (AGENTS.md) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
+(js/core/Debug.js is a source file, so no need to ignore)
