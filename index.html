@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+	  <meta charset="UTF-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <title>Quake 2 Browser Edition</title>
+	  <link rel="stylesheet" href="css/style.css">
+	</head>
+	<body>
+
+	  <!-- OVERLAY / MENU -->
+	  <div id="overlay">
+		<h1>QUAKE II</h1>
+		<div class="subtitle">BROWSER EDITION</div>
+		<button class="start-btn" id="startBtn">ENTER COMBAT</button>
+		<div class="controls">
+		  <span>WASD</span> — Move &nbsp;|&nbsp;
+		  <span>MOUSE</span> — Look &nbsp;|&nbsp;
+		  <span>LMB</span> — Fire<br>
+		  <span>R</span> — Reload &nbsp;|&nbsp;
+		  <span>1-3</span> — Switch Weapons &nbsp;|&nbsp;
+		  <span>SHIFT</span> — Sprint
+		</div>
+	  </div>
+
+	  <!-- HUD -->
+	  <div id="hud">
+		<div class="hud-panel" id="hud-left">
+		  <div>
+			<div class="hud-icon">❤️</div>
+			<div class="hud-value" id="health-val">100</div>
+			<div class="bar-container"><div class="bar-fill" id="health-bar"></div></div>
+		  </div>
+		  <div style="margin-left:15px">
+			<div class="hud-icon">🛡️</div>
+			<div class="hud-value" id="armor-val">0</div>
+			<div class="bar-container"><div class="bar-fill" id="armor-bar"></div></div>
+		  </div>
+		</div>
+		<div class="hud-panel" id="hud-center">
+		  <div style="text-align:center">
+			<div class="hud-label">SCORE</div>
+			<div class="hud-value" id="score-val" style="color:#ffcc00;font-size:28px">0</div>
+		  </div>
+		</div>
+		<div class="hud-panel" id="hud-right">
+		  <div>
+			<div class="hud-label">AMMO</div>
+			<div class="hud-value" id="ammo-val">50</div>
+			<div class="hud-label" id="ammo-type">PULSE RIFLE</div>
+		  </div>
+		</div>
+	  </div>
+
+	  <!-- CROSSHAIR -->
+	  <div id="crosshair"><div id="crosshair-dot"></div></div>
+
+	  <!-- EFFECTS -->
+	  <div id="damage-flash"></div>
+	  <div id="muzzle-flash"></div>
+	  <div id="scanlines"></div>
+	  <div id="vignette"></div>
+	  <div id="level-msg"></div>
+	  <div id="fps"></div>
+	  <div id="weapon-name"></div>
+
+	  <!-- KILL FEED -->
+	  <div id="kill-feed"></div>
+
+	  <!-- MINIMAP -->
+	  <div id="minimap">
+		<canvas id="minimap-canvas" width="150" height="150"></canvas>
+	  </div>
+
+	  <!-- THREE.JS -->
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+	  <!-- GAME MODULES (order matters) -->
+	  <script src="js/core/AudioSystem.js"></script>
+	  <script src="js/core/InputManager.js"></script>
+	  <script src="js/renderer/Renderer.js"></script>
+	  <script src="js/renderer/PostProcessing.js"></script>
+	  <script src="js/world/Collision.js"></script>
+	  <script src="js/world/Level.js"></script>
+	  <script src="js/world/Props.js"></script>
+	  <script src="js/entities/Weapon.js"></script>
+	  <script src="js/entities/Player.js"></script>
+	  <script src="js/entities/Enemy.js"></script>
+	  <script src="js/ui/HUD.js"></script>
+	  <script src="js/core/GameEngine.js"></script>
+
+	  <script>
+		document.getElementById('startBtn').addEventListener('click', () => {
+		  window.game = new GameEngine();
+		  window.game.start();
+		});
+	  </script>
+	<!-- Отладочная панель (нажмите F2 в игре) -->
+	<div id="debug-panel" style="
+	  position: fixed; top: 15px; right: 15px; 
+	  background: #000000dd; color: #00ff44; 
+	  font-family: monospace; font-size: 12px; 
+	  padding: 10px; z-index: 999; display: none;
+	  pointer-events: none; border: 1px solid #00ff4444;
+	">
+	  <div id="debug-content"></div>
+	</div>
+
+	<div id="pause-overlay" style="
+	  position: fixed; inset: 0; z-index: 90;
+	  display: none; align-items: center; justify-content: center;
+	  background: rgba(0,0,0,0.7); color: #ff6600;
+	  font-family: 'Courier New', monospace; font-size: 28px;
+	  letter-spacing: 4px; pointer-events: none;
+	  text-shadow: 0 0 15px #ff4400;
+	">CLICK TO RESUME</div>
+
+	</body>
+</html>

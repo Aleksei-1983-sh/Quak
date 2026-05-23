@@ -1,0 +1,200 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+canvas { display: block; }
+
+/* ===== OVERLAY ===== */
+#overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #1a0a00 0%, #000 70%);
+  transition: opacity 0.5s;
+}
+#overlay.hidden { opacity: 0; pointer-events: none; }
+#overlay h1 {
+  font-size: 72px; color: #ff4400;
+  text-shadow: 0 0 20px #ff4400, 0 0 60px #ff220088;
+  letter-spacing: 12px; margin-bottom: 10px;
+}
+#overlay .subtitle {
+  font-size: 18px; color: #886644; letter-spacing: 6px; margin-bottom: 40px;
+}
+#overlay .start-btn {
+  padding: 15px 50px; font-size: 24px; font-family: 'Courier New', monospace;
+  background: transparent; color: #ff6600; border: 2px solid #ff4400;
+  cursor: pointer; letter-spacing: 4px; transition: all 0.3s;
+  text-transform: uppercase;
+}
+#overlay .start-btn:hover {
+  background: #ff4400; color: #000;
+  box-shadow: 0 0 30px #ff440088;
+}
+#overlay .controls {
+  margin-top: 30px; color: #665544; font-size: 13px; text-align: center; line-height: 2;
+}
+#overlay .controls span { color: #aa8866; }
+
+/* ===== HUD ===== */
+#hud {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 80px; z-index: 50; pointer-events: none;
+  background: linear-gradient(to top, #0a0800ee 0%, transparent 100%);
+}
+.hud-panel {
+  position: absolute; bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+#hud-left { left: 15px; }
+#hud-center { left: 50%; transform: translateX(-50%); }
+#hud-right { right: 15px; }
+
+.hud-icon {
+  width: 40px; height: 40px; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 28px;
+}
+.hud-value {
+  font-size: 36px; font-weight: bold;
+  text-shadow: 0 0 10px currentColor;
+}
+.hud-label {
+  font-size: 10px; color: #887755; letter-spacing: 2px;
+}
+#health-val { color: #00ff44; }
+#armor-val { color: #4488ff; }
+#ammo-val { color: #ffaa00; }
+
+/* Health bar */
+.bar-container {
+  width: 120px; height: 8px; background: #222;
+  border: 1px solid #444; margin-top: 4px;
+}
+.bar-fill { height: 100%; transition: width 0.3s; }
+#health-bar { background: linear-gradient(90deg, #ff0000, #00ff44); width: 100%; }
+#armor-bar { background: linear-gradient(90deg, #0044ff, #4488ff); width: 100%; }
+
+/* Crosshair */
+#crosshair {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 55; pointer-events: none;
+}
+#crosshair::before, #crosshair::after {
+  content: ''; position: absolute; background: #00ff44;
+}
+#crosshair::before {
+  width: 2px; height: 20px; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+#crosshair::after {
+  width: 20px; height: 2px; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+#crosshair-dot {
+  position: absolute; width: 4px; height: 4px;
+  background: #00ff44; border-radius: 50%;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+}
+
+/* Damage flash */
+#damage-flash {
+  position: fixed; inset: 0; z-index: 45;
+  pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, #ff000088 100%);
+  transition: opacity 0.1s;
+}
+
+/* Kill feed */
+#kill-feed {
+  position: fixed; top: 15px; right: 15px; z-index: 55;
+  pointer-events: none; text-align: right;
+}
+.kill-msg {
+  font-size: 14px; color: #ff6600;
+  text-shadow: 0 0 8px #ff440088;
+  margin-bottom: 4px; opacity: 0;
+  animation: killFade 3s forwards;
+}
+@keyframes killFade {
+  0% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Mini-map */
+#minimap {
+  position: fixed; top: 15px; left: 15px; z-index: 55;
+  width: 150px; height: 150px;
+  border: 1px solid #44440088;
+  background: #000000cc;
+  pointer-events: none;
+}
+#minimap canvas { width: 100%; height: 100%; }
+
+/* Muzzle flash */
+#muzzle-flash {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, #ffff00 0%, #ff8800 30%, transparent 70%);
+  z-index: 47; pointer-events: none;
+  opacity: 0;
+}
+
+/* Level transition */
+#level-msg {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 60; pointer-events: none;
+  font-size: 36px; color: #ff6600;
+  text-shadow: 0 0 30px #ff4400;
+  letter-spacing: 8px; opacity: 0;
+  transition: opacity 0.5s;
+}
+
+/* Scanlines */
+#scanlines {
+  position: fixed; inset: 0; z-index: 46;
+  pointer-events: none; opacity: 0.03;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px, #000 2px, #000 4px
+  );
+}
+
+/* Vignette */
+#vignette {
+  position: fixed; inset: 0; z-index: 44;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, #00000088 100%);
+}
+
+/* FPS counter */
+#fps {
+  position: fixed; top: 15px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 55; color: #00ff4488;
+  font-size: 12px; pointer-events: none;
+}
+
+/* Weapon name */
+#weapon-name {
+  position: fixed; bottom: 95px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 55; color: #ffaa00;
+  font-size: 14px; letter-spacing: 4px;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Hit marker */
+.hit-marker {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 56; pointer-events: none;
+  color: #ff0000; font-size: 24px;
+  animation: hitFade 0.3s forwards;
+}
+@keyframes hitFade {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+}
