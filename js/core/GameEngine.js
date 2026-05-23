@@ -1,6 +1,7 @@
 class GameEngine {
   constructor() {
     this.audio = new AudioSystem();
+    DEBUG.core.info('Инициализация GameEngine...');
     this.input = new InputManager();
     this.running = false;
     this.deltaTime = 0;
@@ -41,6 +42,7 @@ class GameEngine {
     this.hud = null;
     this.postFX = null;
 
+    DEBUG.core.info('GameEngine создан, вызываем init()');
     this.init();
   }
 
