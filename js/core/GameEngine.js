@@ -180,6 +180,7 @@ class GameEngine {
     if (e.code === 'Digit1') this.switchWeapon(0);
     if (e.code === 'Digit2') this.switchWeapon(1);
     if (e.code === 'Digit3') this.switchWeapon(2);
+    if (e.code === 'Digit4') this.switchWeapon(3);
     if (e.code === 'KeyR') this.reload();
 
     if (e.code === 'KeyG') { // <--- ДОБАВИТЬ ЭТОТ БЛОК
@@ -194,7 +195,8 @@ class GameEngine {
     this.reloading = false;
     this.hud.update();
 
-    const colors = [0x334433, 0x444444, 0x553322];
+    // Цвета для разных типов оружия
+    const colors = [0x00ff44, 0x888888, 0xff8800, 0xff4400];
     if (this.weaponMesh) this.weaponMesh.material.color.setHex(colors[idx]);
 
     const wn = document.getElementById('weapon-name');
