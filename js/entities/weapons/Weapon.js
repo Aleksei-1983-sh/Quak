@@ -121,7 +121,7 @@ class BaseWeapon {
     if (this.type === 'ray' || this.type === 'ray_multi') {
       const pellets = this.pellets || 1;
       for (let i = 0; i < pellets; i++) {
-        this.raycastShot(game, camera, this.damage, this.spread, this.tracerColor);
+        this.raycastShot(game, camera, props, this.damage, this.spread, this.tracerColor);
       }
     } else if (this.type === 'projectile') {
       this.fireProjectile(game, camera, scene);
@@ -132,7 +132,7 @@ class BaseWeapon {
   }
   
   // Raycast выстрел (для hitscan оружия)
-  raycastShot(game, camera, damage, spread, color) {
+  raycastShot(game, camera, props, damage, spread, color) {
     DEBUG.combat.trace('raycastShot start', { damage, spread, color });
     
     const dir = new THREE.Vector3(

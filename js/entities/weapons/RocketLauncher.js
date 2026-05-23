@@ -120,8 +120,10 @@ class RocketLauncher extends Weapon {
       -1
     ).normalize().applyQuaternion(camera.quaternion);
 
+    // Ракета вылетает из дула оружия, а не из камеры
+    const spawnOffset = dir.clone().multiplyScalar(0.8);
     const projectile = {
-      position: camera.position.clone().add(dir.clone().multiplyScalar(1.5)),
+      position: camera.position.clone().add(spawnOffset),
       velocity: dir.clone().multiplyScalar(20), // Медленнее чем у обычного снаряда
       damage: this.damage,
       life: 4,
