@@ -67,6 +67,7 @@ class GameEngine {
     this.props = new Props(this);
     DEBUG.world.log('Props создан');
 
+    //в нутри игрока создается массив с оружеем
     this.player = new Player(this);
     DEBUG.entity.info('Player создан', { pos: this.player.position });
     this.createWeaponModel();

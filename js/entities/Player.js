@@ -22,7 +22,7 @@ class Player {
 	
 	this.onGround = true;
 	this.sprinting = false;
-	this.godMode = true;
+	this.godMode = false;
   }
 
   update(dt) {

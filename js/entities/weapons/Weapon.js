@@ -1,5 +1,5 @@
 // Базовый класс для всех видов оружия
-class BaseWeapon {
+class Weapon {
   constructor(config) {
     this.name = config.name || 'WEAPON';
     this.type = config.type || 'ray'; // ray, ray_multi, projectile
@@ -216,5 +216,3 @@ class BaseWeapon {
   }
 }
 
-// Алиас для обратной совместимости
-const Weapon = BaseWeapon;
