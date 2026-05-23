@@ -1,5 +1,8 @@
 // Винтовка (Pulse Rifle) - автоматическое оружие
-class Rifle extends Weapon {
+
+import { Weapon } from './index.js';
+
+export class Rifle extends Weapon {
   constructor() {
     super({
       name: 'PULSE RIFLE',
@@ -28,25 +31,67 @@ class Rifle extends Weapon {
     });
   }
 
+// Создать уникальную 3D модель винтовки
   createModel(THREE) {
     const weaponGroup = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.1, 0.45), new THREE.MeshLambertMaterial({ color: this.modelConfig.bodyColor }));
+    
+    // Основной корпус
+    const bodyGeo = new THREE.BoxGeometry(0.07, 0.1, 0.45);
+    const bodyMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.bodyColor });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.set(0.25, -0.18, -0.4);
     weaponGroup.add(body);
-
-    const stock = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.09, 0.2), new THREE.MeshLambertMaterial({ color: this.modelConfig.stockColor }));
+    
+    // Приклад
+    const stockGeo = new THREE.BoxGeometry(0.06, 0.09, 0.2);
+    const stockMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.stockColor });
+    const stock = new THREE.Mesh(stockGeo, stockMat);
     stock.position.set(0.25, -0.19, -0.15);
     weaponGroup.add(stock);
-
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.35, 8), new THREE.MeshLambertMaterial({ color: 0x444444 }));
+    
+    // Ствол
+    const barrelGeo = new THREE.CylinderGeometry(0.02, 0.025, 0.35, 8);
+    const barrelMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
     barrel.rotation.x = Math.PI / 2;
     barrel.position.set(0.25, -0.16, -0.65);
     weaponGroup.add(barrel);
-
+    
+    // Магазин
+    const magGeo = new THREE.BoxGeometry(0.05, 0.15, 0.08);
+    const magMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.magazineColor });
+    const magazine = new THREE.Mesh(magGeo, magMat);
+    magazine.rotation.x = 0.15;
+    magazine.position.set(0.25, -0.28, -0.35);
+    weaponGroup.add(magazine);
+    
+    // Рукоятка
+    const gripGeo = new THREE.BoxGeometry(0.04, 0.1, 0.06);
+    const gripMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.stockColor });
+    const grip = new THREE.Mesh(gripGeo, gripMat);
+    grip.rotation.x = -0.25;
+    grip.position.set(0.25, -0.26, -0.3);
+    weaponGroup.add(grip);
+    
+    // Энергетические акценты (светящиеся полосы)
+    const accentGeo = new THREE.BoxGeometry(0.072, 0.02, 0.3);
+    const accentMat = new THREE.MeshBasicMaterial({ color: this.modelConfig.accentColor });
+    const accent = new THREE.Mesh(accentGeo, accentMat);
+    accent.position.set(0.25, -0.14, -0.45);
+    weaponGroup.add(accent);
+    
+    // Прицел
+    const sightGeo = new THREE.BoxGeometry(0.025, 0.02, 0.03);
+    const sightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const sight = new THREE.Mesh(sightGeo, sightMat);
+    sight.position.set(0.25, -0.12, -0.6);
+    weaponGroup.add(sight);
+    
+    // Свет от выстрела
     const gunLight = new THREE.PointLight(this.muzzleFlashColor, 0.3, 2);
     gunLight.position.set(0.25, -0.13, -0.75);
     weaponGroup.add(gunLight);
-
+    
     return { weaponGroup, weaponMesh: body, gunLight };
   }
 }

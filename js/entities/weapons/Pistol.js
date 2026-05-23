@@ -1,5 +1,8 @@
 // Пистолет - точный полуавтомат
-class Pistol extends Weapon {
+import { Weapon } from './index.js';
+import { Rocket } from '../projectiles/index.js';   // путь относительно текущей папки
+
+export class Pistol extends Weapon {
   constructor() {
     super({
       name: 'PISTOL',
@@ -20,6 +23,7 @@ class Pistol extends Weapon {
       muzzleFlashColor: 0xffffaa,
       tracerColor: 0xcccccc,
       modelConfig: {
+        barrelLength: 0.25,
         gripColor: 0x4a3728,
         slideColor: 0x666666,
         frameColor: 0x333333
@@ -27,30 +31,52 @@ class Pistol extends Weapon {
     });
   }
 
+  // Создать уникальную 3D модель пистолета
   createModel(THREE) {
     const weaponGroup = new THREE.Group();
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.1, 0.3), new THREE.MeshLambertMaterial({ color: this.modelConfig.frameColor }));
+    
+    // Рамка пистолета
+    const frameGeo = new THREE.BoxGeometry(0.06, 0.1, 0.3);
+    const frameMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.frameColor });
+    const frame = new THREE.Mesh(frameGeo, frameMat);
     frame.position.set(0.25, -0.22, -0.35);
     weaponGroup.add(frame);
-
-    const slide = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.06, 0.2), new THREE.MeshLambertMaterial({ color: this.modelConfig.slideColor }));
+    
+    // Затвор (slide)
+    const slideGeo = new THREE.BoxGeometry(0.065, 0.06, 0.2);
+    const slideMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.slideColor });
+    const slide = new THREE.Mesh(slideGeo, slideMat);
     slide.position.set(0.25, -0.15, -0.45);
     weaponGroup.add(slide);
-
-    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.12, 0.08), new THREE.MeshLambertMaterial({ color: this.modelConfig.gripColor }));
+    
+    // Рукоятка
+    const gripGeo = new THREE.BoxGeometry(0.055, 0.12, 0.08);
+    const gripMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.gripColor });
+    const grip = new THREE.Mesh(gripGeo, gripMat);
     grip.rotation.x = -0.2;
     grip.position.set(0.25, -0.28, -0.25);
     weaponGroup.add(grip);
-
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.018, 0.15, 8), new THREE.MeshLambertMaterial({ color: 0x555555 }));
+    
+    // Ствол
+    const barrelGeo = new THREE.CylinderGeometry(0.015, 0.018, 0.15, 8);
+    const barrelMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
     barrel.rotation.x = Math.PI / 2;
     barrel.position.set(0.25, -0.15, -0.58);
     weaponGroup.add(barrel);
-
+    
+    // Прицельная мушка
+    const sightGeo = new THREE.BoxGeometry(0.02, 0.015, 0.02);
+    const sightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const sight = new THREE.Mesh(sightGeo, sightMat);
+    sight.position.set(0.25, -0.11, -0.55);
+    weaponGroup.add(sight);
+    
+    // Свет от выстрела
     const gunLight = new THREE.PointLight(this.muzzleFlashColor, 0.3, 2);
     gunLight.position.set(0.25, -0.12, -0.6);
     weaponGroup.add(gunLight);
-
+    
     return { weaponGroup, weaponMesh: frame, gunLight };
   }
 }

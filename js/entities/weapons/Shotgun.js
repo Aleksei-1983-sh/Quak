@@ -1,5 +1,7 @@
 // Дробовик - оружие ближнего боя с множеством пуль
-class Shotgun extends Weapon {
+import { Weapon } from './index.js';
+
+export class Shotgun extends Weapon {
   constructor() {
     super({
       name: 'SHOTGUN',
@@ -30,21 +32,68 @@ class Shotgun extends Weapon {
     });
   }
 
+// Создать уникальную 3D модель дробовика
   createModel(THREE) {
     const weaponGroup = new THREE.Group();
-    const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.09, 0.2), new THREE.MeshLambertMaterial({ color: this.modelConfig.receiverColor }));
+    
+    // Приклад
+    const stockGeo = new THREE.BoxGeometry(0.07, 0.1, 0.25);
+    const stockMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.stockColor });
+    const stock = new THREE.Mesh(stockGeo, stockMat);
+    stock.position.set(0.25, -0.2, -0.15);
+    weaponGroup.add(stock);
+    
+    // Ствольная коробка (receiver)
+    const receiverGeo = new THREE.BoxGeometry(0.075, 0.09, 0.2);
+    const receiverMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.receiverColor });
+    const receiver = new THREE.Mesh(receiverGeo, receiverMat);
     receiver.position.set(0.25, -0.18, -0.35);
     weaponGroup.add(receiver);
-
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.45, 8), new THREE.MeshLambertMaterial({ color: this.modelConfig.barrelColor }));
+    
+    // Основной ствол
+    const barrelGeo = new THREE.CylinderGeometry(0.025, 0.03, 0.45, 8);
+    const barrelMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.barrelColor });
+    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
     barrel.rotation.x = Math.PI / 2;
     barrel.position.set(0.25, -0.16, -0.6);
     weaponGroup.add(barrel);
-
+    
+    // Подствольный магазин (tube magazine)
+    const tubeGeo = new THREE.CylinderGeometry(0.018, 0.018, 0.35, 8);
+    const tubeMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.barrelColor });
+    const tube = new THREE.Mesh(tubeGeo, tubeMat);
+    tube.rotation.x = Math.PI / 2;
+    tube.position.set(0.25, -0.22, -0.55);
+    weaponGroup.add(tube);
+    
+    // Цевье (pump)
+    const pumpGeo = new THREE.CylinderGeometry(0.028, 0.028, 0.15, 8);
+    const pumpMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.pumpColor });
+    const pump = new THREE.Mesh(pumpGeo, pumpMat);
+    pump.rotation.x = Math.PI / 2;
+    pump.position.set(0.25, -0.22, -0.42);
+    weaponGroup.add(pump);
+    
+    // Рукоятка пистолетного типа
+    const gripGeo = new THREE.BoxGeometry(0.05, 0.11, 0.07);
+    const gripMat = new THREE.MeshLambertMaterial({ color: this.modelConfig.stockColor });
+    const grip = new THREE.Mesh(gripGeo, gripMat);
+    grip.rotation.x = -0.2;
+    grip.position.set(0.25, -0.27, -0.28);
+    weaponGroup.add(grip);
+    
+    // Мушка
+    const sightGeo = new THREE.BoxGeometry(0.02, 0.02, 0.02);
+    const sightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const sight = new THREE.Mesh(sightGeo, sightMat);
+    sight.position.set(0.25, -0.13, -0.82);
+    weaponGroup.add(sight);
+    
+    // Свет от выстрела
     const gunLight = new THREE.PointLight(this.muzzleFlashColor, 0.5, 3);
     gunLight.position.set(0.25, -0.14, -0.85);
     weaponGroup.add(gunLight);
-
+    
     return { weaponGroup, weaponMesh: receiver, gunLight };
   }
 }
