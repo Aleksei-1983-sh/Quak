@@ -1,7 +1,10 @@
 class GameEngine {
   constructor() {
+    DEBUG.core.info('=== Инициализация GameEngine ===');
     this.audio = new AudioSystem();
+    DEBUG.core.log('AudioSystem создан');
     this.input = new InputManager();
+    DEBUG.core.log('InputManager создан');
     this.running = false;
     this.deltaTime = 0;
     this.fps = 0;
@@ -41,32 +44,47 @@ class GameEngine {
     this.hud = null;
     this.postFX = null;
 
+    DEBUG.core.info('GameEngine создан, вызываем init()');
     this.init();
   }
 
   init() {
+    DEBUG.core.info('=== Запуск init() ===');
     this.renderer3d = new Renderer();
+    DEBUG.render.log('Renderer создан');
     this.scene = this.renderer3d.scene;
     this.camera = this.renderer3d.camera;
     this.renderer = this.renderer3d.renderer;
 
     this.collision = new Collision();
+    DEBUG.world.log('Collision создан');
     this.walls = this.collision.walls;
 
     this.postFX = new PostProcessing();
+    DEBUG.render.log('PostProcessing создан');
     this.hud = new HUD(this);
+    DEBUG.ui.log('HUD создан');
     this.props = new Props(this);
+    DEBUG.world.log('Props создан');
 
     this.player = new Player(this);
+    DEBUG.entity.info('Player создан', { pos: this.player.position });
     this.createWeaponModel();
+    DEBUG.render.log('Оружие создано');
     this.level = new Level(this);
+    DEBUG.world.info('Level создан', { rows: this.level.rows, cols: this.level.cols });
     this.spawnEnemies();
+    DEBUG.entity.info(`Враги заспавлены: ${this.totalEnemies}`);
     this.spawnPickups();
+    DEBUG.world.log(`Pickups заспавлены: ${this.pickups.length}`);
 
     window.addEventListener('resize', () => this.onResize());
     document.addEventListener('keydown', e => this.onKeyDown(e));
+    DEBUG.input.log('Слушатели событий добавлены');
 
     this.audio.play('ambient');
+    DEBUG.audio.log('Ambient звук запущен');
+    DEBUG.core.info('=== init() завершен ===');
   }
 
   createWeaponModel() {
@@ -195,6 +213,8 @@ class GameEngine {
   update(dt) {
     if (!this.running) return;
 
+    DEBUG.core.trace('update() start', { dt, fps: this.fps });
+
     this.frameCount++;
     this.fpsTime += dt;
     if (this.fpsTime >= 1) {
@@ -202,6 +222,7 @@ class GameEngine {
       this.frameCount = 0;
       this.fpsTime = 0;
       document.getElementById('fps').textContent = `${this.fps} FPS`;
+      DEBUG.perf.log(`FPS: ${this.fps}`);
     }
 
     this.player.update(dt);
@@ -213,6 +234,7 @@ class GameEngine {
         const w = this.player.weapons[this.currentWeapon];
         w.ammo = w.maxAmmo;
         this.reloading = false;
+        DEBUG.combat.info('Перезарядка завершена');
         this.hud.update();
       }
     }
@@ -253,6 +275,7 @@ class GameEngine {
       const msg = document.getElementById('level-msg');
       msg.textContent = 'SECTOR CLEARED';
       msg.style.opacity = 1;
+      DEBUG.ui.info('Уровень завершен!');
       setTimeout(() => msg.style.opacity = 0, 3000);
     }
 
@@ -268,13 +291,24 @@ class GameEngine {
         FPS: ${this.fps}
       `;
     }
+
+    DEBUG.core.trace('update() end');
   }
 
   updateShooting(dt) {
     const w = this.player.weapons[this.currentWeapon];
-    if (this.fireTimer > 0) { this.fireTimer -= dt; return; }
+    
+    // Проверка валидности оружия
+    if (!DEBUG.validate(w, 'currentWeapon', 'COMBAT')) return;
+    
+    if (this.fireTimer > 0) { 
+      this.fireTimer -= dt; 
+      return; 
+    }
+    
     if (this.input.mouse.left && w.ammo > 0 && !this.reloading) {
       if (w.auto || !this._wasFiring) {
+        DEBUG.combat.trace('Выстрел', { weapon: w.name, ammo: w.ammo });
         this.fireWeapon(w);
         this.fireTimer = w.fireRate;
         w.ammo--;
@@ -307,6 +341,8 @@ class GameEngine {
   }
 
   raycastShot(damage, spread, color) {
+    DEBUG.combat.trace('raycastShot start', { damage, spread, color });
+    
     // 1. Создаем направление стрельбы (с разбросом)
     // Проверка: если вектор нулевой, не нормализуем его (это вызывает NaN)
     const dir = new THREE.Vector3(
@@ -315,7 +351,10 @@ class GameEngine {
       -1
     );
     
-    if (dir.lengthSq() === 0) return; // Страховка от ошибки
+    if (dir.lengthSq() === 0) {
+      DEBUG.combat.warn('raycastShot: нулевой вектор направления');
+      return; // Страховка от ошибки
+    }
     dir.normalize().applyQuaternion(this.camera.quaternion);
 
     let closestHit = null;
@@ -341,15 +380,19 @@ class GameEngine {
       if (perpDist < enemy.size && toEnemy.dot(dir) > 0 && dist < closestDist) {
         closestDist = dist;
         closestHit = enemy;
+        DEBUG.combat.trace('Потенциальное попадание', { enemy: enemy.type, dist });
       }
     });
 
     // Если попали
     if (closestHit) {
+      DEBUG.combat.info('Попадание во врага!', { enemy: closestHit.type, damage, dist: closestDist });
       closestHit.takeDamage(damage);
       this.audio.play('hit');
       this.showHitMarker();
       this.props.spawnParticles(closestHit.position.clone(), 0xff0000, 5);
+    } else {
+      DEBUG.combat.trace('Промах');
     }
 
     // Создаем трассер
@@ -387,15 +430,29 @@ class GameEngine {
   }
 
   updateProjectiles(dt) {
+    DEBUG.physics.trace('updateProjectiles start', { count: this.projectiles.length });
+    
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const proj = this.projectiles[i];
+      
+      // Проверка валидности снаряда
+      if (!DEBUG.validate(proj, `projectile[${i}]`, 'PHYSICS')) {
+        this.projectiles.splice(i, 1);
+        continue;
+      }
+      
       proj.life -= dt;
-      if (proj.life <= 0) { this.explodeProjectile(proj); continue; }
+      if (proj.life <= 0) { 
+        DEBUG.physics.trace('Снаряд уничтожен по времени жизни');
+        this.explodeProjectile(proj); 
+        continue; 
+      }
 
       proj.position.add(proj.velocity.clone().multiplyScalar(dt));
       proj.mesh.position.copy(proj.position);
 
       if (this.collision.checkCollision(proj.position, 0.3)) {
+        DEBUG.physics.info('Снаряд попал в стену');
         this.explodeProjectile(proj);
         continue;
       }
@@ -404,6 +461,7 @@ class GameEngine {
       this.enemies.forEach(enemy => {
         if (enemy.state === 'dead' || hit) return;
         if (proj.position.distanceTo(enemy.position) < enemy.size + 0.3) {
+          DEBUG.combat.info('Снаряд попал во врага', { enemy: enemy.type });
           this.explodeProjectile(proj);
           enemy.takeDamage(proj.damage);
           hit = true;
@@ -412,33 +470,45 @@ class GameEngine {
     }
 
     this.projectiles = this.projectiles.filter(p => p.life > 0);
+    DEBUG.physics.trace('updateProjectiles end', { remaining: this.projectiles.length });
   }
 
   explodeProjectile(proj) {
+    DEBUG.physics.info('Взрыв снаряда', { pos: proj.position, damage: proj.damage });
+    
     this.audio.play('explosion');
     this.props.spawnParticles(proj.position.clone(), 0xff4400, 30);
 
+    let enemiesHit = 0;
     this.enemies.forEach(enemy => {
       if (enemy.state === 'dead') return;
       const dist = proj.position.distanceTo(enemy.position);
       if (dist < 5) {
         const dmg = proj.damage * (1 - dist / 5);
         enemy.takeDamage(dmg);
+        enemiesHit++;
+        DEBUG.combat.log(`Враг ${enemy.type} получил ${dmg.toFixed(1)} урона от взрыва`);
       }
     });
+    DEBUG.combat.info(`Взрыв задел врагов: ${enemiesHit}`);
 
     const playerDist = proj.position.distanceTo(this.player.position);
     if (playerDist < 4) {
-      this.player.takeDamage(Math.floor(proj.damage * (1 - playerDist / 4)));
+      const playerDmg = Math.floor(proj.damage * (1 - playerDist / 4));
+      DEBUG.combat.warn(`Игрок получил урон от взрыва: ${playerDmg}`);
+      this.player.takeDamage(playerDmg);
     }
 
     if (proj.mesh) {
       this.scene.remove(proj.mesh);
       if (proj.mesh.children[0]) this.scene.remove(proj.mesh.children[0]);
     }
+    DEBUG.physics.trace('Взрыв завершен');
   }
 
   updatePickups(dt) {
+    DEBUG.world.trace('updatePickups', { count: this.pickups.length });
+    
     this.pickups.forEach(pickup => {
       if (!pickup.active) return;
 
@@ -448,15 +518,19 @@ class GameEngine {
 
       const dist = this.player.position.distanceTo(pickup.position);
       if (dist < 1.5) {
+        DEBUG.world.info(`Подбор предмета: ${pickup.type}`);
         switch (pickup.type) {
           case 'health':
             this.player.health = Math.min(this.player.maxHealth, this.player.health + 25);
+            DEBUG.entity.log(`Здоровье восстановлено: ${this.player.health}`);
             break;
           case 'armor':
             this.player.armor = Math.min(this.player.maxArmor, this.player.armor + 30);
+            DEBUG.entity.log(`Броня восстановлена: ${this.player.armor}`);
             break;
           case 'ammo':
             this.player.weapons.forEach(w => w.ammo = Math.min(w.maxAmmo, w.ammo + 25));
+            DEBUG.combat.log('Патроны подобраны');
             break;
         }
         pickup.active = false;

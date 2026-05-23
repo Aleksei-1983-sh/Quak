@@ -63,6 +63,7 @@
 - ✅ World systems (Level, Collision, Props)
 - ✅ UI/HUD system
 - ✅ Renderer with post-processing support
+- ✅ **Debug & Error System** - Comprehensive logging framework with categories and levels
 
 ### In Progress / Missing:
 - ⚠️ No game assets loaded (textures, models, sounds, maps)
@@ -99,6 +100,23 @@ Handles:
 - Keyboard input
 - Mouse movement/locking
 - Action mappings
+
+### 5. Debug System (Integrated across all modules)
+Comprehensive logging framework providing:
+- **Global toggle** - Enable/disable all logs via `DEBUG.ENABLED`
+- **Categorized logging** - Separate controls for core, entity, combat, physics, world, ui, input, render, perf, audio
+- **Log levels** - trace, log, info, warn, error with color coding
+- **Timestamps** - Every log includes timing information
+- **Contextual messages** - Detailed state information at critical points
+- **Performance tracking** - FPS monitoring and frame time analysis
+- **Error catching** - Try-catch blocks with informative error messages
+
+Usage in browser console:
+```javascript
+DEBUG.ENABLED = false;  // Disable all logs
+DEBUG.CATEGORIES.combat = false;  // Disable combat logs only
+DEBUG.LEVELS.error = true;  // Show only errors
+```
 
 ---
 
@@ -161,8 +179,12 @@ These prevent temporary editor files from being committed to the repository. Rem
 - GameEngine is the central coordination point
 - When adding features, follow existing patterns in the codebase
 - Always verify asset paths and loading mechanisms when modifying world/entity code
+- **Debug system is active** - Use `DEBUG.ENABLED` to control logging verbosity
+- **Log categories** - Target specific systems: `DEBUG.CATEGORIES.physics`, `DEBUG.CATEGORIES.combat`, etc.
+- **Error handling** - All critical sections have try-catch blocks with informative messages
+- **Performance monitoring** - FPS logs available via `DEBUG.CATEGORIES.perf`
 
 ---
 
-*Last Updated: Auto-generated*  
+*Last Updated: Current Session*  
 *Maintained by: Development Team & AI Agents*

@@ -73,25 +73,26 @@
 		<canvas id="minimap-canvas" width="150" height="150"></canvas>
 	  </div>
 
-	  <!-- THREE.JS -->
-	  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- THREE.JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-	  <!-- GAME MODULES (order matters) -->
-	  <script src="js/core/AudioSystem.js"></script>
-	  <script src="js/core/InputManager.js"></script>
-	  <script src="js/renderer/Renderer.js"></script>
-	  <script src="js/renderer/PostProcessing.js"></script>
-	  <script src="js/world/Collision.js"></script>
-	  <script src="js/world/Level.js"></script>
-	  <script src="js/world/Props.js"></script>
-	  <script src="js/entities/Weapon.js"></script>
-	  <script src="js/entities/Player.js"></script>
-	  <script src="js/entities/Enemy.js"></script>
-	  <script src="js/ui/HUD.js"></script>
-	  <script src="js/core/GameEngine.js"></script>
+  <!-- GAME MODULES (order matters) -->
+  <script src="js/core/Debug.js"></script>
+  <script src="js/core/AudioSystem.js"></script>
+  <script src="js/core/InputManager.js"></script>
+  <script src="js/renderer/Renderer.js"></script>
+  <script src="js/renderer/PostProcessing.js"></script>
+  <script src="js/world/Collision.js"></script>
+  <script src="js/world/Level.js"></script>
+  <script src="js/world/Props.js"></script>
+  <script src="js/entities/Weapon.js"></script>
+  <script src="js/entities/Player.js"></script>
+  <script src="js/entities/Enemy.js"></script>
+  <script src="js/ui/HUD.js"></script>
+  <script src="js/core/GameEngine.js"></script>
 
-	  <script>
-		document.getElementById('startBtn').addEventListener('click', () => {
+  <script>
+document.getElementById('startBtn').addEventListener('click', () => {
 		  window.game = new GameEngine();
 		  window.game.start();
 		});

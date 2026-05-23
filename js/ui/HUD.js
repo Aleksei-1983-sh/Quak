@@ -24,8 +24,13 @@ class HUD {
   }
 
   update() {
+    DEBUG.ui.trace('HUD update');
+    
     const p = this.game.player;
     const w = p.weapons[this.game.currentWeapon];
+
+    // Проверка валидности данных
+    if (!DEBUG.validate(p, 'player', 'UI') || !DEBUG.validate(w, 'weapon', 'UI')) return;
 
     this.els.healthVal.textContent = Math.ceil(p.health);
     this.els.armorVal.textContent = Math.ceil(p.armor);
@@ -37,20 +42,34 @@ class HUD {
     this.els.armorBar.style.width = `${(p.armor / p.maxArmor) * 100}%`;
 
     const hVal = this.els.healthVal;
-    if (p.health < 25) hVal.style.color = '#ff0000';
-    else if (p.health < 50) hVal.style.color = '#ff8800';
-    else hVal.style.color = '#00ff44';
+    if (p.health < 25) {
+      hVal.style.color = '#ff0000';
+      DEBUG.ui.warn('Низкое здоровье!');
+    } else if (p.health < 50) {
+      hVal.style.color = '#ff8800';
+    } else {
+      hVal.style.color = '#00ff44';
+    }
+    
+    DEBUG.ui.trace('HUD update end');
   }
 
   showKillFeed(type, score) {
+    DEBUG.ui.info(`Kill feed: ${type} +${score}`);
+    
     const msg = document.createElement('div');
     msg.className = 'kill-msg';
     msg.textContent = `ELIMINATED ${type.toUpperCase()} +${score}`;
     this.els.killFeed.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
+    setTimeout(() => {
+      msg.remove();
+      DEBUG.ui.trace('Kill feed message removed');
+    }, 3000);
   }
 
   updateMinimap() {
+    DEBUG.ui.trace('updateMinimap start');
+    
     const ctx = this.minimapCtx;
     const size = this.minimapSize;
 
@@ -60,7 +79,10 @@ class HUD {
 
     // Получаем доступ к уровню и его карте
     const level = this.game.level;
-    if (!level || !level.mapGrid) return;
+    if (!level || !level.mapGrid) {
+      DEBUG.world.warn('updateMinimap: нет данных уровня');
+      return;
+    }
 
     const mapGrid = level.mapGrid;
     const rows = mapGrid.length;
@@ -70,6 +92,7 @@ class HUD {
     // Вычисляем масштаб для мини-карты
     const scale = size / Math.max(rows, cols);
 
+    let tilesDrawn = 0;
     // Рисуем сетку карты
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
@@ -84,21 +107,25 @@ class HUD {
           case '#': // Полная стена
             ctx.fillStyle = '#443322';
             ctx.fillRect(x, y, w, h);
+            tilesDrawn++;
             break;
 
           case '=': // Горизонтальная стена
             ctx.fillStyle = '#443322';
             ctx.fillRect(x, y + h * 0.3, w, h * 0.4);
+            tilesDrawn++;
             break;
 
           case '|': // Вертикальная стена
             ctx.fillStyle = '#443322';
             ctx.fillRect(x + w * 0.3, y, w * 0.4, h);
+            tilesDrawn++;
             break;
 
           case 'P': // Колонна
             ctx.fillStyle = '#553311';
             ctx.fillRect(x + w * 0.2, y + h * 0.2, w * 0.6, h * 0.6);
+            tilesDrawn++;
             break;
 
           case 'L': // Фонарь
@@ -106,40 +133,49 @@ class HUD {
             ctx.beginPath();
             ctx.arc(x + w / 2, y + h / 2, w * 0.3, 0, Math.PI * 2);
             ctx.fill();
+            tilesDrawn++;
             break;
 
           case 'E': // Враг grunt
             ctx.fillStyle = '#ff6600';
             ctx.fillRect(x + w * 0.25, y + h * 0.25, w * 0.5, h * 0.5);
+            tilesDrawn++;
             break;
 
           case 'S': // Враг soldier
             ctx.fillStyle = '#ff4400';
             ctx.fillRect(x + w * 0.2, y + h * 0.2, w * 0.6, h * 0.6);
+            tilesDrawn++;
             break;
 
           case 'B': // Враг boss
             ctx.fillStyle = '#ff0000';
             ctx.fillRect(x + w * 0.15, y + h * 0.15, w * 0.7, h * 0.7);
+            tilesDrawn++;
             break;
 
           case 'H': // Здоровье
             ctx.fillStyle = '#00ff44';
             ctx.fillRect(x + w * 0.3, y + h * 0.3, w * 0.4, h * 0.4);
+            tilesDrawn++;
             break;
 
           case 'A': // Броня
             ctx.fillStyle = '#4488ff';
             ctx.fillRect(x + w * 0.3, y + h * 0.3, w * 0.4, h * 0.4);
+            tilesDrawn++;
             break;
 
           case 'M': // Патроны
             ctx.fillStyle = '#ffaa00';
             ctx.fillRect(x + w * 0.3, y + h * 0.3, w * 0.4, h * 0.4);
+            tilesDrawn++;
             break;
         }
       }
     }
+
+    DEBUG.ui.trace(`Мини-карта: ${tilesDrawn} тайлов отрисовано`);
 
     // Рисуем игрока
     const player = this.game.player;
@@ -168,11 +204,15 @@ class HUD {
         py - Math.cos(player.yaw) * 8
       );
       ctx.stroke();
+      
+      DEBUG.ui.trace(`Игрок на миникарте: (${px.toFixed(1)}, ${py.toFixed(1)})`);
     }
 
     // Рамка
     ctx.strokeStyle = '#44440088';
     ctx.lineWidth = 1;
     ctx.strokeRect(0, 0, size, size);
+    
+    DEBUG.ui.trace('updateMinimap end');
   }
 }
