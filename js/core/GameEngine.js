@@ -152,12 +152,34 @@ async setupWeaponModel() {
             
         } catch (err) {
             console.error(`❌ Ошибка загрузки модели "${weapon.name}":`, err);
-            
-            // Fallback: оставляем плейсхолдер или создаём простую модель
-            box.material.color.set(0xff0000); // красный = ошибка
-            // Или создаём заглушку через базовый createModel():
-            // const fallback = weapon.createModel?.(THREE);
-            // if (fallback) { /* ...настройка... */ }
+
+			// Fallback: вместо wireframe-плейсхолдера всегда создаём базовую 3D-модель,
+			// чтобы игрок видел оружие и мог играть даже при сбое GLB.
+			if (weapon?.createModel && typeof weapon.createModel === 'function') {
+				try {
+					const fallback = weapon.createModel(THREE);
+					this.camera.remove(placeholder);
+					placeholder.traverse(c => {
+						if (c.isMesh) {
+							c.geometry?.dispose();
+							c.material?.dispose?.();
+						}
+					});
+
+					this.weaponGroup = fallback.weaponGroup;
+					this.weaponMesh = fallback.weaponMesh;
+					this.gunLight = fallback.gunLight;
+					this.weaponGroup.position.set(0.35, -0.25, -0.6);
+					this.weaponGroup.rotation.set(0, Math.PI, 0);
+					this.camera.add(this.weaponGroup);
+					console.warn(`⚠️ Используется fallback-модель для "${weapon.name}"`);
+				} catch (fallbackErr) {
+					console.error(`❌ Ошибка fallback-модели "${weapon.name}":`, fallbackErr);
+					box.material.color.set(0xff0000);
+				}
+			} else {
+				box.material.color.set(0xff0000);
+			}
         }
     } 
     // 🔹 4. Fallback: старая синхронная система (для совместимости)
@@ -264,7 +286,7 @@ async setupWeaponModel() {
 		}
 	}
 
-	switchWeapon(idx) {
+	async switchWeapon(idx) {
 		if (idx === this.currentWeapon || idx >= this.player.weapons.length) return;
 		this.currentWeapon = idx;
 		this.reloading = false;
