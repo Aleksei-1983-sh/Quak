@@ -34,7 +34,32 @@ class RocketLauncher extends Weapon {
   }
   
   // Создать уникальную 3D модель ракетницы
-  createModel(THREE) {
+  async createModel(THREE) {
+    if (typeof THREE.GLTFLoader === 'function') {
+      try {
+        const gltf = await new Promise((resolve, reject) => {
+          const loader = new THREE.GLTFLoader();
+          loader.load('assets/models/rocket_launcher.glb', resolve, undefined, reject);
+        });
+
+        const weaponGroup = new THREE.Group();
+        const glbModel = gltf.scene;
+        glbModel.scale.set(0.18, 0.18, 0.18);
+        glbModel.position.set(0.25, -0.2, -0.55);
+        glbModel.rotation.y = Math.PI;
+        weaponGroup.add(glbModel);
+
+        const gunLight = new THREE.PointLight(this.muzzleFlashColor, 0.8, 4);
+        gunLight.position.set(0.25, -0.13, -0.85);
+        weaponGroup.add(gunLight);
+
+        DEBUG.render.info('rocket_launcher.glb успешно загружен');
+        return { weaponGroup, weaponMesh: glbModel, gunLight };
+      } catch (err) {
+        DEBUG.render.warn('Не удалось загрузить rocket_launcher.glb, используем fallback модель', err);
+      }
+    }
+
     const weaponGroup = new THREE.Group();
     
     // Основная труба

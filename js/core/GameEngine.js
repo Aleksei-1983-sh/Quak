@@ -45,10 +45,12 @@ class GameEngine {
     this.postFX = null;
 
     DEBUG.core.info('GameEngine создан, вызываем init()');
-    this.init();
+    this.init().catch(err => {
+      DEBUG.core.error('Ошибка инициализации GameEngine', err);
+    });
   }
 
-  init() {
+  async init() {
     DEBUG.core.info('=== Запуск init() ===');
     this.renderer3d = new Renderer();
     DEBUG.render.log('Renderer создан');
@@ -70,7 +72,7 @@ class GameEngine {
     //в нутри игрока создается массив с оружеем
     this.player = new Player(this);
     DEBUG.entity.info('Player создан', { pos: this.player.position });
-    this.createWeaponModel();
+    await this.createWeaponModel();
     DEBUG.render.log('Оружие создано');
     this.level = new Level(this);
     DEBUG.world.info('Level создан', { rows: this.level.rows, cols: this.level.cols });
@@ -88,11 +90,11 @@ class GameEngine {
     DEBUG.core.info('=== init() завершен ===');
   }
 
-  createWeaponModel() {
+  async createWeaponModel() {
     // Создаем оружие используя метод текущего оружия
     const weapon = this.player.weapons[this.currentWeapon];
     if (weapon && weapon.createModel) {
-      const model = weapon.createModel(THREE);
+      const model = await weapon.createModel(THREE);
       this.weaponGroup = model.weaponGroup;
       this.weaponMesh = model.weaponMesh;
       this.gunLight = model.gunLight;
@@ -117,8 +119,10 @@ class GameEngine {
       this.gunLight.position.set(0.25, -0.1, -0.5);
       this.weaponGroup.add(this.gunLight);
     }
-    this.camera.add(this.weaponGroup);
-    this.scene.add(this.camera);
+    if (this.weaponGroup) {
+      this.camera.add(this.weaponGroup);
+      this.scene.add(this.camera);
+    }
   }
 
   spawnEnemies() {
@@ -199,7 +203,7 @@ class GameEngine {
     }
   }
 
-  switchWeapon(idx) {
+  async switchWeapon(idx) {
     if (idx === this.currentWeapon || idx >= this.player.weapons.length) return;
     this.currentWeapon = idx;
     this.reloading = false;
@@ -208,7 +212,7 @@ class GameEngine {
     if (this.weaponGroup) {
       this.camera.remove(this.weaponGroup);
     }
-    this.createWeaponModel();
+    await this.createWeaponModel();
     
     this.hud.update();
 

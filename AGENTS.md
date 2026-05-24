@@ -4,7 +4,7 @@
 
 **Project Name:** Quake2 Browser  
 **Description:** Web-based Quake2-style browser FPS built with Three.js and Web Audio API  
-**Snapshot Date:** 2026-05-23  
+**Snapshot Date:** 2026-05-24  
 
 ---
 
@@ -81,6 +81,7 @@
   - Shotgun
   - Rocket Launcher
 - ✅ Manual browser test pages (`test_load.html`, `test_three.html`) for integration sanity checks
+- ✅ Rocket launcher GLB loading path with graceful fallback to procedural model
 
 ### In Progress / Missing:
 - ⚠️ Real game assets are still missing (maps/models/textures/sounds directories are empty)
@@ -168,5 +169,5 @@ This file is the source-of-truth project snapshot for architecture, stage, and c
 
 ---
 
-*Last Updated: 2026-05-23 (UTC)*  
+*Last Updated: 2026-05-24 (UTC)*  
 *Maintained by: Development Team & AI Agents*
