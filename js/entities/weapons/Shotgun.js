@@ -1,5 +1,6 @@
 // Дробовик - оружие ближнего боя с множеством пуль
 import { Weapon } from './Weapon.js';
+import { Rocket } from '../projectiles/index.js';   // путь относительно текущей папки
 
 export class Shotgun extends Weapon {
   constructor() {

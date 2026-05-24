@@ -1,6 +1,8 @@
 // Винтовка (Pulse Rifle) - автоматическое оружие
 
 import { Weapon } from './Weapon.js';
+import { Rocket } from '../projectiles/index.js';   // путь относительно текущей папки
+
 
 export class Rifle extends Weapon {
   constructor() {
