@@ -1,5 +1,15 @@
 // utils/WeaponGLBLoader.js
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+let CachedGLTFLoader = null;
+
+async function getGLTFLoaderClass() {
+	if (CachedGLTFLoader) return CachedGLTFLoader;
+
+	// В текущем проекте three.js подключён как глобальный скрипт, поэтому
+	// используем ESM CDN, который корректно резолвит зависимости.
+	const module = await import('https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
+	CachedGLTFLoader = module.GLTFLoader;
+	return CachedGLTFLoader;
+}
 
 /**
  * Загружает оружие из GLB и возвращает удобные ссылки на части
@@ -8,6 +18,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
  * @returns {Promise<Object>} { root, parts, lights, model }
  */
 export async function loadWeaponGLB(url, THREE) {
+	const GLTFLoader = await getGLTFLoaderClass();
+
 	return new Promise((resolve, reject) => {
 		const loader = new GLTFLoader();
 
