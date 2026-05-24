@@ -48,7 +48,7 @@ class GameEngine {
 		this.init();
 	}
 
-	init() {
+	async init() {
 		DEBUG.core.info('=== Запуск init() ===');
 		this.renderer3d = new Renderer();
 		DEBUG.render.log('Renderer создан');
@@ -70,7 +70,7 @@ class GameEngine {
 		//в нутри игрока создается массив с оружеем
 		this.player = new Player(this);
 		DEBUG.entity.info('Player создан', { pos: this.player.position });
-		this.createWeaponModel();
+		await this.setupWeaponModel();
 		DEBUG.render.log('Оружие создано');
 		this.level = new Level(this);
 		DEBUG.world.info('Level создан', { rows: this.level.rows, cols: this.level.cols });
@@ -88,20 +88,103 @@ class GameEngine {
 		DEBUG.core.info('=== init() завершен ===');
 	}
 
-	createWeaponModel() {
-		// Создаем оружие используя метод текущего оружия
-		const weapon = this.player.weapons[this.currentWeapon];
-		if (weapon && weapon.createModel) {
-			// создаем модельку оружия
-			const model = weapon.createModel(THREE);
-			this.weaponGroup = model.weaponGroup;
-			this.weaponMesh = model.weaponMesh;
-			this.gunLight = model.gunLight;
-		}
-
-		this.camera.add(this.weaponGroup);
-		this.scene.add(this.camera);
-	}
+/**
+ * 🎮 Загружает и настраивает модель оружия для вида от первого лица
+ * Вызывать при смене оружия или инициализации игрока
+ * @async
+ */
+async setupWeaponModel() {
+    const weapon = this.player.weapons[this.currentWeapon];
+    
+    // 🔹 1. Удаляем старую модель (если есть)
+    if (this.weaponGroup && this.weaponGroup.parent) {
+        this.weaponGroup.parent.remove(this.weaponGroup);
+        
+        // Очистка памяти: удаляем геометрию и материалы
+        this.weaponGroup.traverse?.((child) => {
+            if (child.isMesh) {
+                child.geometry?.dispose();
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.dispose());
+                } else {
+                    child.material?.dispose();
+                }
+            }
+        });
+    }
+    
+    // 🔹 2. Показываем временный индикатор загрузки (опционально)
+    const placeholder = new THREE.Group();
+    const box = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.1, 0.3),
+        new THREE.MeshBasicMaterial({ color: 0xff6600, wireframe: true })
+    );
+    placeholder.add(box);
+    placeholder.position.set(0.35, -0.25, -0.6);
+    this.camera.add(placeholder);
+    this.weaponGroup = placeholder; // временная ссылка
+    
+    // 🔹 3. Проверяем, поддерживает ли оружие загрузку из GLB
+    if (weapon?.loadModel && typeof weapon.loadModel === 'function') {
+        try {
+            // 📦 Загружаем модель асинхронно
+            const model = await weapon.loadModel(THREE);
+            
+            // 🎯 Настраиваем позицию для вида от первого лица
+            model.position.set(0.35, -0.25, -0.6);  // справа-снизу-впереди
+            model.rotation.set(0, Math.PI, 0);       // разворот к игроку
+            model.scale.setScalar(0.9);              // универсальный масштаб
+            
+            // 🔦 Сохраняем ссылки на части для анимаций (если есть)
+            this.weaponMesh = model;                 // основная ссылка
+            this.gunLight = weapon.weaponParts?.muzzleLight || null;
+            
+            // 🔄 Заменяем плейсхолдер на реальную модель
+            this.camera.remove(placeholder);
+            placeholder.traverse(c => {
+                if (c.isMesh) c.geometry?.dispose();
+            });
+            
+            this.weaponGroup = model;
+            this.camera.add(this.weaponGroup);
+            
+            console.log(`✅ Модель "${weapon.name}" загружена`);
+            
+        } catch (err) {
+            console.error(`❌ Ошибка загрузки модели "${weapon.name}":`, err);
+            
+            // Fallback: оставляем плейсхолдер или создаём простую модель
+            box.material.color.set(0xff0000); // красный = ошибка
+            // Или создаём заглушку через базовый createModel():
+            // const fallback = weapon.createModel?.(THREE);
+            // if (fallback) { /* ...настройка... */ }
+        }
+    } 
+    // 🔹 4. Fallback: старая синхронная система (для совместимости)
+    else if (weapon?.createModel && typeof weapon.createModel === 'function') {
+        console.warn('⚠️ Используется устаревший createModel() — рекомендуется migrate на GLB');
+        
+        const model = weapon.createModel(THREE);
+        this.weaponGroup = model.weaponGroup;
+        this.weaponMesh = model.weaponMesh;
+        this.gunLight = model.gunLight;
+        
+        // Позиция для первого лица
+        this.weaponGroup.position.set(0.35, -0.25, -0.6);
+        this.weaponGroup.rotation.set(0, Math.PI, 0);
+        
+        this.camera.add(this.weaponGroup);
+    }
+    else {
+        console.warn(`⚠️ Оружие "${weapon?.name}" не имеет модели`);
+        this.camera.remove(placeholder);
+    }
+    
+    // 🔹 5. Добавляем камеру в сцену (если ещё не добавлена)
+    if (!this.camera.parent) {
+        this.scene.add(this.camera);
+    }
+}
 
 	spawnEnemies() {
 		const positions = [
@@ -190,7 +273,7 @@ class GameEngine {
 		if (this.weaponGroup) {
 			this.camera.remove(this.weaponGroup);
 		}
-		this.createWeaponModel();
+		await this.setupWeaponModel();
 
 		this.hud.update();
 
