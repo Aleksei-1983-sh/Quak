@@ -82,6 +82,8 @@
   - Rocket Launcher
 - ✅ Unified weapon state model (`isMoving`, `isSprinting`, `isFiring`, `isReloading`, `reloadProgress`) for autonomous per-weapon animation/update logic
 - ✅ Manual browser test pages (`test_load.html`, `test_three.html`) for integration sanity checks
+- ✅ Fixed weapon switch flow to support async model rebuild without syntax errors in classic script context
+- ✅ GLB loader integration now uses runtime ESM import compatible with globally loaded Three.js
 
 ### In Progress / Missing:
 - ⚠️ Real game assets are still missing (maps/models/textures/sounds directories are empty)
@@ -169,5 +171,5 @@ This file is the source-of-truth project snapshot for architecture, stage, and c
 
 ---
 
-*Last Updated: 2026-05-23 (UTC, ES module bridge for weapons in index.html)*  
+*Last Updated: 2026-05-24 (UTC, async weapon switch + GLB loader import fix)*  
 *Maintained by: Development Team & AI Agents*

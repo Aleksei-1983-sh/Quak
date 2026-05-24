@@ -264,7 +264,7 @@ async setupWeaponModel() {
 		}
 	}
 
-	switchWeapon(idx) {
+	async switchWeapon(idx) {
 		if (idx === this.currentWeapon || idx >= this.player.weapons.length) return;
 		this.currentWeapon = idx;
 		this.reloading = false;
