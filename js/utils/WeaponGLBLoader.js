@@ -6,9 +6,27 @@ async function getGLTFLoaderClass() {
 
 	// В текущем проекте three.js подключён как глобальный скрипт, поэтому
 	// используем ESM CDN, который корректно резолвит зависимости.
-	const module = await import('https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
-	CachedGLTFLoader = module.GLTFLoader;
-	return CachedGLTFLoader;
+		const candidates = [
+		'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js',
+		'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js',
+		'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'
+	];
+
+	let lastErr = null;
+	for (const url of candidates) {
+		try {
+			const module = await import(url);
+			if (module?.GLTFLoader) {
+				CachedGLTFLoader = module.GLTFLoader;
+				return CachedGLTFLoader;
+			}
+		} catch (err) {
+			lastErr = err;
+			console.warn(`⚠️ Не удалось импортировать GLTFLoader из ${url}:`, err);
+		}
+	}
+
+	throw new Error(`GLTFLoader import failed from all CDN sources. Last error: ${lastErr?.message || 'unknown'}`);
 }
 
 /**
