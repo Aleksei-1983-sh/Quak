@@ -343,28 +343,37 @@ export class Weapon {
 	 * Плавное покачивание, когда персонаж не движется
 	 */
 	static applyIdleSway(weaponGroup, state, config) {
+		const base = weaponGroup.userData?.basePosition;
 		const speed = config.swaySpeed * 0.6; // медленнее
-		weaponGroup.position.x = Math.sin(state.time * speed) * config.swayIdleX;
-		weaponGroup.position.y = Math.cos(state.time * speed * 2) * config.swayIdleY;
+		const baseX = base ? base.x : 0;
+		const baseY = base ? base.y : 0;
+		weaponGroup.position.x = baseX + Math.sin(state.time * speed) * config.swayIdleX;
+		weaponGroup.position.y = baseY + Math.cos(state.time * speed * 2) * config.swayIdleY;
 	}
 
 	/**
 	 * Умеренное покачивание при обычном движении
 	 */
 	static applyWalkingSway(weaponGroup, state, config) {
+		const base = weaponGroup.userData?.basePosition;
 		const speed = config.swaySpeed;
-		weaponGroup.position.x = Math.sin(state.time * speed) * config.swayMoveX;
-		weaponGroup.position.y = Math.cos(state.time * speed * 2) * config.swayMoveY;
+		const baseX = base ? base.x : 0;
+		const baseY = base ? base.y : 0;
+		weaponGroup.position.x = baseX + Math.sin(state.time * speed) * config.swayMoveX;
+		weaponGroup.position.y = baseY + Math.cos(state.time * speed * 2) * config.swayMoveY;
 	}
 
 	/**
 	 * Интенсивное покачивание при беге
 	 */
 	static applySprintSway(weaponGroup, state, config) {
+		const base = weaponGroup.userData?.basePosition;
 		const mul = config.sprintSwayMultiplier;
 		const speed = config.swaySpeed * mul;
-		weaponGroup.position.x = Math.sin(state.time * speed) * config.swayMoveX * mul;
-		weaponGroup.position.y = Math.cos(state.time * speed * 2) * config.swayMoveY * mul;
+		const baseX = base ? base.x : 0;
+		const baseY = base ? base.y : 0;
+		weaponGroup.position.x = baseX + Math.sin(state.time * speed) * config.swayMoveX * mul;
+		weaponGroup.position.y = baseY + Math.cos(state.time * speed * 2) * config.swayMoveY * mul;
 	}
 
 	/**
@@ -410,6 +419,8 @@ export class Weapon {
 	 * Применяет отдачу при выстреле и плавное восстановление
 	 */
 	static handleRecoil(weaponGroup, anim, state, dt, config) {
+		const basePos = weaponGroup.userData?.basePosition;
+		const baseRot = weaponGroup.userData?.baseRotation;
 
 	// 🔍 ОТЛАДКА: выводим все ключевые значения
 	const fireRate = config.fireRate;
@@ -432,20 +443,21 @@ export class Weapon {
 		anim.rotX    += (0 - anim.rotX) * recover;
 		anim.rotZ    += (0 - anim.rotZ) * recover;
 
-		// Применяем к 3D-объекту
-		weaponGroup.position.z = anim.recoilZ;
-		weaponGroup.rotation.x = anim.rotX;
-		weaponGroup.rotation.z = anim.rotZ;
-	} 
+			// Применяем к 3D-объекту
+			weaponGroup.position.z = (basePos ? basePos.z : 0) + anim.recoilZ;
+			weaponGroup.rotation.x = (baseRot ? baseRot.x : 0) + anim.rotX;
+			weaponGroup.rotation.z = (baseRot ? baseRot.z : 0) + anim.rotZ;
+		} 
 
 	/**
 	 * Наклон оружия при перезарядке (плавная дуга)
 	 */
 	static applyReload(weaponGroup, state, config) {
+		const baseRot = weaponGroup.userData?.baseRotation;
 		const p = state.reloadProgress; // 0 → 1
 		const arc = Math.sin(p * Math.PI); // плавная дуга: 0 → 1 → 0
 
-		weaponGroup.rotation.x = -config.reloadTilt * arc;
+		weaponGroup.rotation.x = (baseRot ? baseRot.x : 0) - config.reloadTilt * arc;
 		weaponGroup.rotation.z += 0.2 * arc;
 	}
 	//----------------------------------------------and-updata----------------------------------------------------------

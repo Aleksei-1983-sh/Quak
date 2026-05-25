@@ -86,6 +86,7 @@
 - ✅ GLB loader integration now uses runtime ESM import compatible with globally loaded Three.js
 - ✅ GLTFLoader import now retries multiple CDNs (`esm.sh`, `jsDelivr`, `unpkg`) to reduce blank/wireframe weapon cases
 - ✅ RocketLauncher now has procedural fallback geometry via `createModel()` when GLB loading fails
+- ✅ Viewmodel base transforms are now persisted (`basePosition`/`baseRotation`/`baseScale`) so sway/recoil/reload animations apply as offsets instead of overriding initial placement
 
 ### In Progress / Missing:
 - ⚠️ Real game assets are still missing (maps/models/textures/sounds directories are empty)
@@ -173,5 +174,5 @@ This file is the source-of-truth project snapshot for architecture, stage, and c
 
 ---
 
-*Last Updated: 2026-05-24 (UTC, GLB loader multi-CDN fallback + RocketLauncher geometry fallback model)*  
+*Last Updated: 2026-05-25 (UTC, viewmodel base transform persistence for stable first-person positioning with animation offsets)*  
 *Maintained by: Development Team & AI Agents*
