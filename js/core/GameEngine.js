@@ -160,21 +160,6 @@ async setupWeaponModel() {
             // if (fallback) { /* ...настройка... */ }
         }
     } 
-    // 🔹 4. Fallback: старая синхронная система (для совместимости)
-    else if (weapon?.createModel && typeof weapon.createModel === 'function') {
-        console.warn('⚠️ Используется устаревший createModel() — рекомендуется migrate на GLB');
-        
-        const model = weapon.createModel(THREE);
-        this.weaponGroup = model.weaponGroup;
-        this.weaponMesh = model.weaponMesh;
-        this.gunLight = model.gunLight;
-        
-        // Позиция для первого лица
-        this.weaponGroup.position.set(0.35, -0.25, -0.6);
-        this.weaponGroup.rotation.set(0, Math.PI, 0);
-        
-        this.camera.add(this.weaponGroup);
-    }
     else {
         console.warn(`⚠️ Оружие "${weapon?.name}" не имеет модели`);
         this.camera.remove(placeholder);

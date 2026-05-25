@@ -86,46 +86,6 @@ export class RocketLauncher extends Weapon {
 	}
 
 	/**
-	 * 🧱 Локальный fallback, если GLB недоступен
-	 * @param {THREE} THREE
-	 * @returns {{weaponGroup: THREE.Group, weaponMesh: THREE.Mesh, gunLight: THREE.PointLight}}
-	 */
-	createModel(THREE) {
-		const weaponGroup = new THREE.Group();
-
-		const body = new THREE.Mesh(
-			new THREE.CylinderGeometry(0.09, 0.11, 0.9, 14),
-			new THREE.MeshStandardMaterial({ color: 0x3f454d, metalness: 0.7, roughness: 0.45 })
-		);
-		body.rotation.z = Math.PI / 2;
-		weaponGroup.add(body);
-
-		const muzzle = new THREE.Mesh(
-			new THREE.CylinderGeometry(0.05, 0.05, 0.18, 12),
-			new THREE.MeshStandardMaterial({ color: 0x22262b, metalness: 0.8, roughness: 0.4 })
-		);
-		muzzle.position.set(-0.52, 0.02, -0.02);
-		muzzle.rotation.z = Math.PI / 2;
-		muzzle.name = 'Muzzle';
-		weaponGroup.add(muzzle);
-
-		const grip = new THREE.Mesh(
-			new THREE.BoxGeometry(0.18, 0.24, 0.13),
-			new THREE.MeshStandardMaterial({ color: 0x6a4c2f, roughness: 0.8 })
-		);
-		grip.position.set(0.18, -0.18, 0.02);
-		grip.rotation.z = -0.25;
-		weaponGroup.add(grip);
-
-		const gunLight = new THREE.PointLight(0xff8800, 0, 3);
-		gunLight.position.copy(muzzle.position);
-		weaponGroup.add(gunLight);
-
-		this.weaponParts = { model: weaponGroup, muzzle, muzzleLight: gunLight };
-		return { weaponGroup, weaponMesh: body, gunLight };
-	}
-
-	/**
 	 * 💥 Радиус взрыва ракеты (переопределение)
 	 * @returns {number} радиус в единицах сцены
 	 */

@@ -14,9 +14,9 @@ class Player {
 	
 	// Создаем массив оружия используя новые классы
 	this.weapons = [
-	  new Rifle(),
-	  new Pistol(),
-	  new Shotgun(),
+	 // new Rifle(),
+	 // new Pistol(),
+	 // new Shotgun(),
 	  new RocketLauncher()
 	];
 	
