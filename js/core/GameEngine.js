@@ -134,6 +134,9 @@ async setupWeaponModel() {
             model.position.set(0.35, -0.25, -0.6);  // справа-снизу-впереди
             model.rotation.set(0, Math.PI, 0);       // разворот к игроку
             model.scale.setScalar(0.9);              // универсальный масштаб
+            model.userData.basePosition = model.position.clone();
+            model.userData.baseRotation = model.rotation.clone();
+            model.userData.baseScale = model.scale.clone();
             
             // 🔦 Сохраняем ссылки на части для анимаций (если есть)
             this.weaponMesh = model;                 // основная ссылка
